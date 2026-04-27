@@ -1,39 +1,32 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
+
+const TIMEOUT = 10000
+const UNAUTHORIZED_STATUS = 401
+const ME_ENDPOINT = "/users/me"
 
 export const instance = axios.create({
-    baseURL: 'http://localhost:8080/api/v1',
-    timeout: 1000,
-    headers: {'Content-Type': 'application/json'}
+    baseURL: import.meta.env.VITE_API_BASE_URL,
+    timeout: TIMEOUT,
+    headers: { 'Content-Type': 'application/json' },
+    withCredentials: true,
 })
 
-// basic interceptor 
 instance.interceptors.request.use(
-    (req) => {
+    (req) => req,
+    (err) => Promise.reject(err)
+)
 
-        const token = localStorage.getItem('token')
+instance.interceptors.response.use(
+    (res) => res,
+    async (err: AxiosError) => {
+        const url = err.config?.url ?? ""
+        const isUnauthorized = err.response?.status === UNAUTHORIZED_STATUS
+        const isMeEndpoint = url.includes(ME_ENDPOINT)
 
-        if (token) {
-            req.headers['Authorization'] = `Bearer ${token}`
+        if (isUnauthorized && !isMeEndpoint) {
+            window.location.href = '/sign-in'
         }
 
-        return req
-    },
-    (err) => {
         return Promise.reject(err)
     }
 )
-
-// // also handle response errors globally
-// instance.interceptors.response.use(
-//     (res) => res,
-//     (error) => {
-//         if (error.response?.status === 401) {
-//             localStorage.removeItem('token')
-//             window.location.href = '/sign-in' // redirect if token expired
-//         }
-
-//         return Promise.reject(error)
-//     }
-// )
-
-

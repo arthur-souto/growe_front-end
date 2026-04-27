@@ -2,10 +2,16 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "sonner"
-import { authService } from "@/api/services/auth-service"
 import { Spinner } from "@/components/ui/spinner"
+import { navigationService } from "@/api/services/navigation-service"
+import { AuthService } from "@/api/services/auth-service"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function SignIn() {
+
+  const { login } = useAuth()
+  
+  const authService = new AuthService()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -13,17 +19,25 @@ export default function SignIn() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    // chamar sua API Spring aqui
     try {
-      const { accessToken } = (await authService.signIn({ email, password })).data
-      console.log(accessToken)
-      toast.success("Login bem-sucedido!")
+      const { data } = await authService.signIn({ email, password })
+
+      login({
+        id: data.id,
+        fullName: data.fullName,
+        email: data.email,
+        role: data.role,
+        lastLoginAt: new Date(data.lastLoginAt),
+        profileImage: data.profileImage,
+      })
+
+      navigationService.navigate("/home", { replace: true })
     } catch (error) {
       toast.error("Erro ao fazer login. Verifique suas credenciais.")
+      console.log("Login error:", error)
       setLoading(false)
-    }
-    finally {
-        setLoading(false)
+    } finally {
+      setLoading(false)
     }
   }
   return (
