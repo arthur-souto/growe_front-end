@@ -1,7 +1,13 @@
+import { NavLink } from "react-router"
 import { useAuth } from "@/hooks/useAuth"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { LogOut } from "lucide-react"
+import { LogOut, Home, Building2 } from "lucide-react"
+
+const NAV_LINKS = [
+  { to: "/home", label: "Início", Icon: Home },
+  { to: "/home/companies", label: "Empresas", Icon: Building2 },
+]
 
 export default function Header() {
   const { user, logout } = useAuth()
@@ -14,9 +20,27 @@ export default function Header() {
 
   return (
     <header className="border-b border-border bg-card">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-end px-4 sm:px-6 lg:px-8">
-        {/* Logo/Brand Section */}
-       
+      <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        {/* Nav Links */}
+        <nav className="flex items-center gap-1">
+          {NAV_LINKS.map(({ to, label, Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === "/home"}
+              className={({ isActive }) =>
+                `flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                }`
+              }
+            >
+              <Icon className="size-4" />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
 
         {/* User Section */}
         <div className="flex items-center gap-4">
