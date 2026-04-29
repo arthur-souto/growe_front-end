@@ -20,11 +20,31 @@ export const routes = createBrowserRouter([
         children: [
           {
             index: true,
-            Component: lazy(() => import("./features/home/home.tsx"))
+            Component: lazy(() => import("./features/home/home.tsx")),
           },
           {
             path: "companies",
-            Component: lazy(() => import("./features/companies/companies-space.tsx")),
+            Component: lazy(
+              () => import("./features/companies/companies-space.tsx")
+            ),
+          },
+        ],
+      },
+      {
+        path: "my-company/:slug",
+        Component: lazy(() => import("./layouts/company-layout.tsx")),
+        children: [
+          {
+            index: true,
+            Component: lazy(
+              () => import("./features/companies/company-space.tsx")
+            ),
+          },
+          {
+            path: "configuracoes",
+            Component: lazy(
+              () => import("./features/companies/company-settings.tsx")
+            ),
           },
         ],
       },

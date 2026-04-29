@@ -1,9 +1,23 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { Building2, Plus } from "lucide-react"
+import { Building2, Plus, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupCount,
+} from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -19,7 +33,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { CompanyService } from "@/api/services/company-service"
-import type { CreateCompanyRequest, Plan, ResumeCompanyResponse, SizeRange } from "@/api/model"
+import type {
+  CreateCompanyRequest,
+  Plan,
+  ResumeCompanyResponse,
+  SizeRange,
+} from "@/api/model"
+import { NavLink } from "react-router"
 
 const companyService = new CompanyService()
 
@@ -110,7 +130,9 @@ export default function CompaniesSpace() {
 
               <form onSubmit={handleCreate} className="space-y-4 pt-2">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-foreground">Nome</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Nome
+                  </label>
                   <input
                     required
                     maxLength={200}
@@ -122,20 +144,26 @@ export default function CompaniesSpace() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-foreground">CNPJ</label>
+                  <label className="text-sm font-medium text-foreground">
+                    CNPJ
+                  </label>
                   <input
                     required
                     pattern="\d{14}"
                     maxLength={14}
                     value={form.cnpj}
-                    onChange={(e) => handleField("cnpj", e.target.value.replace(/\D/g, ""))}
+                    onChange={(e) =>
+                      handleField("cnpj", e.target.value.replace(/\D/g, ""))
+                    }
                     placeholder="00000000000000"
                     className="h-9 w-full border border-input bg-background px-3 text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-foreground">Porte</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Porte
+                  </label>
                   <Select
                     value={form.sizeRange}
                     onValueChange={(v) => handleField("sizeRange", v)}
@@ -144,17 +172,21 @@ export default function CompaniesSpace() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {(Object.keys(SIZE_RANGE_LABELS) as SizeRange[]).map((key) => (
-                        <SelectItem key={key} value={key}>
-                          {SIZE_RANGE_LABELS[key]}
-                        </SelectItem>
-                      ))}
+                      {(Object.keys(SIZE_RANGE_LABELS) as SizeRange[]).map(
+                        (key) => (
+                          <SelectItem key={key} value={key}>
+                            {SIZE_RANGE_LABELS[key]}
+                          </SelectItem>
+                        )
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-foreground">Plano</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Plano
+                  </label>
                   <Select
                     value={form.plan}
                     onValueChange={(v) => handleField("plan", v)}
@@ -175,11 +207,15 @@ export default function CompaniesSpace() {
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-foreground">
                     URL da imagem{" "}
-                    <span className="text-muted-foreground font-normal">(opcional)</span>
+                    <span className="font-normal text-muted-foreground">
+                      (opcional)
+                    </span>
                   </label>
                   <input
                     value={form.companyImage}
-                    onChange={(e) => handleField("companyImage", e.target.value)}
+                    onChange={(e) =>
+                      handleField("companyImage", e.target.value)
+                    }
                     placeholder="https://..."
                     className="h-9 w-full border border-input bg-background px-3 text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
                   />
@@ -202,7 +238,9 @@ export default function CompaniesSpace() {
           <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
             <Building2 className="size-10 opacity-40" />
             <p className="text-sm">Nenhuma empresa encontrada.</p>
-            <p className="text-xs">Crie sua primeira empresa clicando em "Nova empresa".</p>
+            <p className="text-xs">
+              Crie sua primeira empresa clicando em "Nova empresa".
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -222,8 +260,12 @@ export default function CompaniesSpace() {
                       </div>
                     )}
                     <div className="min-w-0">
-                      <CardTitle className="truncate text-sm">{company.name}</CardTitle>
-                      <CardDescription className="text-xs">{company.cnpj}</CardDescription>
+                      <CardTitle className="truncate text-sm">
+                        {company.name}
+                      </CardTitle>
+                      <CardDescription className="text-xs">
+                        {company.cnpj}
+                      </CardDescription>
                     </div>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -240,12 +282,44 @@ export default function CompaniesSpace() {
                     )}
                   </div>
                 </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex items-center gap-2">
+                    {company.users.length > 0 ? (
+                      <AvatarGroup>
+                        {company.users.slice(0, 3).map((user) => (
+                          <Avatar key={user.email} size="sm">
+                            <AvatarImage
+                              src={user.profileImage}
+                              alt={user.fullName}
+                            />
+                            <AvatarFallback>
+                              {user.fullName.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                        {company.users.length > 3 && (
+                          <AvatarGroupCount className="text-xs">
+                            +{company.users.length - 3}
+                          </AvatarGroupCount>
+                        )}
+                      </AvatarGroup>
+                    ) : (
+                      <Users className="size-4 text-muted-foreground/50" />
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {company.users.length}{" "}
+                      {company.users.length === 1 ? "membro" : "membros"}
+                    </span>
+                  </div>
+                </CardContent>
+
                 <CardFooter className="flex gap-2 pt-0">
                   <Button variant="outline" size="sm" className="flex-1">
                     Detalhes
                   </Button>
+
                   <Button size="sm" className="flex-1">
-                    Entrar
+                    <NavLink className="w-full h-full flex items-center justify-center" to={`/my-company/${company.slug}`}>Entrar</NavLink>
                   </Button>
                 </CardFooter>
               </Card>

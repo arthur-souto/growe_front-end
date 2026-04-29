@@ -1,4 +1,4 @@
-import type { Role } from "@/shared/model"
+import type { CompanyRole, Role } from "@/shared/model"
 
 export interface SignInRequest {
   email: string
@@ -50,7 +50,8 @@ export interface ResumeCompanyResponse {
   sizeRange: SizeRange
   plan: Plan
   companyImage: string | null
-  isActive: boolean
+  isActive: boolean,
+  users: Array<ResumeMemberResponse>
 }
 
 export interface PageResponse<T> {
@@ -62,4 +63,37 @@ export interface PageResponse<T> {
   first: boolean
   last: boolean
   empty: boolean
+}
+
+
+export interface ResumeMemberResponse {
+  fullName: string
+  email: string
+  profileImage: string
+  companyRole: CompanyRole
+}
+
+export interface CompanyDetailsResponse {
+  id: string
+  name: string
+  slug: string
+  cnpj: string
+  sizeRange: SizeRange
+  plan: Plan
+  companyImage: string | null
+  trialEndsAt: string | null
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  members: ResumeMemberResponse[]
+}
+
+export interface UpdateCompanyRequest {
+  name: string
+  sizeRange?: SizeRange
+  companyImage?: string
+}
+
+export interface IdResponse {
+  id: string
 }
