@@ -46,6 +46,12 @@ export const routes = createBrowserRouter([
               () => import("./features/companies/company-settings.tsx")
             ),
           },
+          {
+            path: "membros",
+            Component: lazy(
+              () => import("./features/companies/members/members-page.tsx")
+            ),
+          },
         ],
       },
     ],

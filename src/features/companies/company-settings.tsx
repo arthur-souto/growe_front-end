@@ -53,7 +53,7 @@ const PLAN_LABELS: Record<string, string> = {
 
 const COMPANY_ROLE_LABELS: Record<string, string> = {
   OWNER: "Proprietário",
-  ADMIN: "Administrador",
+  RH: "RH",
   MANAGER: "Gerente",
   EMPLOYEE: "Funcionário",
 }
@@ -411,7 +411,7 @@ export default function CompanySettings() {
                           <p className="truncate text-xs text-muted-foreground">{member.email}</p>
                         </div>
                         <span className="shrink-0 bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                          {COMPANY_ROLE_LABELS[member.companyRole] ?? member.companyRole}
+                          {member.role}
                         </span>
                       </li>
                     ))}

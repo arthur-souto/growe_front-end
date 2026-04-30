@@ -1,6 +1,6 @@
 // types/auth.ts
 export const ROLES = ["ADMIN", "USER", "MANAGER"] as const
-export const COMPANY_ROLES = ["OWNER", "ADMIN", "MANAGER", "EMPLOYEE"] as const
+export const COMPANY_ROLES = ["OWNER", "RH", "MANAGER", "EMPLOYEE"] as const
 export type CompanyRole = (typeof COMPANY_ROLES)[number]
 export type Role = (typeof ROLES)[number]
 

@@ -1,11 +1,16 @@
 import { instance } from "../instance"
 import type {
   CompanyDetailsResponse,
+  CreateCompanyMemberRequest,
   CreateCompanyRequest,
   CreateCompanyResponse,
   IdResponse,
+  ImportSummaryResponse,
+  PageMemberResponse,
   PageResponse,
+  ResumeMemberResponse,
   ResumeCompanyResponse,
+  UpdateCompanyMemberRequest,
   UpdateCompanyRequest,
 } from "../model"
 
@@ -32,5 +37,33 @@ export class CompanyService {
 
   deleteCompany(slug: string) {
     return instance.delete(`${BASE}/${slug}`)
+  }
+
+  getMembers(slug: string, page = 0, size = 200) {
+    return instance.get<PageMemberResponse>(`${BASE}/${slug}/members`, {
+      params: { page, size },
+    })
+  }
+
+  addMember(slug: string, req: CreateCompanyMemberRequest) {
+    return instance.post<IdResponse>(`${BASE}/${slug}/add-member`, null, {
+      params: req,
+    })
+  }
+
+  updateMember(slug: string, memberId: string, payload: UpdateCompanyMemberRequest) {
+    return instance.patch<IdResponse>(`${BASE}/${slug}/update-member/${memberId}`, payload)
+  }
+
+  removeMember(slug: string, memberId: string) {
+    return instance.delete(`${BASE}/${slug}/members/${memberId}`)
+  }
+
+  importMembers(slug: string, file: File) {
+    const form = new FormData()
+    form.append("file", file)
+    return instance.post<ImportSummaryResponse>(`${BASE}/${slug}/members/import`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
   }
 }

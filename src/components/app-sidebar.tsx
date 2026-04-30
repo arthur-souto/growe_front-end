@@ -4,7 +4,6 @@ import {
   Building2,
   ChevronDown,
   ChevronsUpDown,
-  Home,
   LayoutDashboard,
   LogOut,
   Settings,

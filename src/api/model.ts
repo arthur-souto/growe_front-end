@@ -1,4 +1,6 @@
-import type { CompanyRole, Role } from "@/shared/model"
+import type { Role } from "@/shared/model"
+
+export type CompanyMemberRole = "OWNER" | "RH" | "MANAGER" | "EMPLOYEE"
 
 export interface SignInRequest {
   email: string
@@ -67,10 +69,23 @@ export interface PageResponse<T> {
 
 
 export interface ResumeMemberResponse {
+  id: string
   fullName: string
   email: string
   profileImage: string
-  companyRole: CompanyRole
+  role: CompanyMemberRole
+  createdAt?: string
+}
+
+export interface CreateCompanyMemberRequest {
+  fullName: string
+  email: string
+  password: string
+  role: CompanyMemberRole
+}
+
+export interface UpdateCompanyMemberRequest {
+  role: CompanyMemberRole
 }
 
 export interface CompanyDetailsResponse {
@@ -88,6 +103,17 @@ export interface CompanyDetailsResponse {
   members: ResumeMemberResponse[]
 }
 
+export interface PageMemberResponse {
+  content: ResumeMemberResponse[]
+  totalElements: number
+  totalPages: number
+  number: number
+  size: number
+  first: boolean
+  last: boolean
+  empty: boolean
+}
+
 export interface UpdateCompanyRequest {
   name: string
   sizeRange?: SizeRange
@@ -96,4 +122,10 @@ export interface UpdateCompanyRequest {
 
 export interface IdResponse {
   id: string
+}
+
+export interface ImportSummaryResponse {
+  created: number
+  skipped: number
+  erros: string[]
 }
