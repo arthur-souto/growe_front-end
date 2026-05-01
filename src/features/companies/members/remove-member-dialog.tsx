@@ -12,6 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { CompanyService } from "@/api/services/company-service"
+import { getApiErrorMessage } from "@/api/api-error"
 import type { ResumeMemberResponse } from "@/api/model"
 import { getInitials } from "./members.config"
 import { RoleBadge } from "./role-badge"
@@ -36,8 +37,8 @@ export function RemoveMemberDialog({ open, onClose, member, slug, onRemoved }: P
       toast.success(`${member.fullName} removido(a) do workspace.`)
       onRemoved()
       onClose()
-    } catch {
-      toast.error("Erro ao remover membro.")
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Erro ao remover membro."))
     } finally {
       setRemoving(false)
     }

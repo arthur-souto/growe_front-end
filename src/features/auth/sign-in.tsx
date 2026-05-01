@@ -6,6 +6,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { navigationService } from "@/api/services/navigation-service"
 import { AuthService } from "@/api/services/auth-service"
 import { useAuth } from "@/hooks/useAuth"
+import { getApiErrorMessage } from "@/api/api-error"
 
 export default function SignIn() {
 
@@ -33,8 +34,7 @@ export default function SignIn() {
 
       navigationService.navigate("/home", { replace: true })
     } catch (error) {
-      toast.error("Erro ao fazer login. Verifique suas credenciais.")
-      console.log("Login error:", error)
+      toast.error(getApiErrorMessage(error, "Erro ao fazer login. Verifique suas credenciais."))
       setLoading(false)
     } finally {
       setLoading(false)

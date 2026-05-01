@@ -5,12 +5,18 @@ export type SortDir = "asc" | "desc"
 
 export const PAGE_SIZE = 10
 
-export const ALL_ROLES: CompanyMemberRole[] = ["OWNER", "RH", "MANAGER", "EMPLOYEE"]
+export const ALL_ROLES: CompanyMemberRole[] = ["ADMIN", "OWNER", "RH", "MANAGER", "EMPLOYEE"]
 
 export const ROLE_CONFIG: Record<
   CompanyMemberRole,
   { label: string; pill: string; dot: string; activeBorder: string }
 > = {
+  ADMIN: {
+    label: "Administrador",
+    pill: "border border-rose-500/40 bg-rose-500/10 text-rose-300",
+    dot: "bg-rose-400",
+    activeBorder: "border-rose-500/60 bg-rose-500/10",
+  },
   OWNER: {
     label: "Proprietário",
     pill: "border border-violet-500/40 bg-violet-500/10 text-violet-300",

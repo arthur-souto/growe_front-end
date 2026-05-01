@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { CompanyService } from "@/api/services/company-service"
+import { getApiErrorMessage } from "@/api/api-error"
 import type { CompanyMemberRole, ResumeMemberResponse } from "@/api/model"
 import { ALL_ROLES, ROLE_CONFIG, getInitials } from "./members.config"
 
@@ -45,8 +46,8 @@ export function EditRoleDialog({ open, onClose, member, slug, onUpdated, canAssi
       toast.success("Função atualizada com sucesso.")
       onUpdated(role)
       onClose()
-    } catch {
-      toast.error("Erro ao atualizar função.")
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Erro ao atualizar função."))
     } finally {
       setSaving(false)
     }

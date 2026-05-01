@@ -1,6 +1,6 @@
 import type { Role } from "@/shared/model"
 
-export type CompanyMemberRole = "OWNER" | "RH" | "MANAGER" | "EMPLOYEE"
+export type CompanyMemberRole = "ADMIN" | "OWNER" | "RH" | "MANAGER" | "EMPLOYEE"
 
 export interface SignInRequest {
   email: string
@@ -128,4 +128,41 @@ export interface ImportSummaryResponse {
   created: number
   skipped: number
   erros: string[]
+}
+
+export interface CycleResumeResponse {
+  id: string
+  creatorName: string
+  creatorProfile: string
+  creatorRole: CompanyMemberRole
+  name: string
+  description: string
+  color: string
+  isActive: boolean
+  startDate: string
+  endDate: string
+  createdAt: string
+}
+
+export interface CreateEvaluationCycleRequest {
+  name: string
+  description: string
+  color: string
+  startDate: string
+  endDate: string
+}
+
+export interface CycleStatusSummary {
+  activated: number
+  closed: number
+}
+
+export interface PagedModelCycleResumeResponse {
+  content: CycleResumeResponse[]
+  page: {
+    size: number
+    number: number
+    totalElements: number
+    totalPages: number
+  }
 }

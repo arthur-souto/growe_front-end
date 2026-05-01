@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react"
-import { NavLink, useNavigate, useParams } from "react-router"
+import { NavLink, useParams } from "react-router"
 import {
   Building2,
-  ChevronDown,
+  CalendarRange,
   ChevronsUpDown,
   LayoutDashboard,
   LogOut,
   Settings,
+  ShieldOff,
   Users,
 } from "lucide-react"
 import {
@@ -36,14 +37,16 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useUser } from "@/hooks/useUser"
 import { useAuth } from "@/hooks/useAuth"
 import { CompanyService } from "@/api/services/company-service"
-import type { ResumeCompanyResponse } from "@/api/model"
+import { getApiErrorMessage } from "@/api/api-error"
+import type { CompanyDetailsResponse } from "@/api/model"
 
 const companyService = new CompanyService()
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, path: "" },
   { label: "Membros", icon: Users, path: "/membros" },
-  { label: "Configurações", icon: Settings, path: "/configuracoes" }
+  { label: "Ciclos", icon: CalendarRange, path: "/ciclos" },
+  { label: "Configurações", icon: Settings, path: "/configuracoes" },
 ]
 
 function getInitials(name: string) {
@@ -57,93 +60,67 @@ function getInitials(name: string) {
 
 export function AppSidebar() {
   const { slug } = useParams<{ slug: string }>()
-  const navigate = useNavigate()
   const { user } = useUser()
   const { logout } = useAuth()
-  const [companies, setCompanies] = useState<ResumeCompanyResponse[]>([])
-  const [loadingCompanies, setLoadingCompanies] = useState(true)
-
-  const activeCompany = companies.find((c) => c.slug === slug)
+  const [company, setCompany] = useState<CompanyDetailsResponse | null>(null)
+  const [loadingCompany, setLoadingCompany] = useState(true)
+  const [companyError, setCompanyError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!slug) return
+    setLoadingCompany(true)
+    setCompanyError(null)
     companyService
-      .getMyCompanies()
-      .then((res) => setCompanies(res.data.content))
-      .finally(() => setLoadingCompanies(false))
-  }, [])
+      .getCompany(slug)
+      .then((res) => { setCompany(res.data); setCompanyError(null) })
+      .catch((err) => { setCompany(null); setCompanyError(getApiErrorMessage(err, "Erro ao carregar empresa")) })
+      .finally(() => setLoadingCompany(false))
+  }, [slug])
 
   return (
     <Sidebar collapsible="icon">
-      {/* Workspace switcher */}
+      {/* Company header */}
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground shrink-0">
-                    {activeCompany?.companyImage ? (
-                      <img
-                        src={activeCompany.companyImage}
-                        alt={activeCompany.name}
-                        className="size-full rounded-md object-cover"
-                      />
-                    ) : (
-                      <Building2 className="size-4" />
-                    )}
-                  </div>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    {loadingCompanies ? (
-                      <Skeleton className="h-3.5 w-24" />
-                    ) : (
-                      <>
-                        <span className="truncate font-semibold">
-                          {activeCompany?.name ?? "Empresa"}
-                        </span>
-                        <span className="truncate text-xs text-muted-foreground capitalize">
-                          {activeCompany?.plan.toLowerCase() ?? "—"}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <ChevronsUpDown className="ml-auto size-4 shrink-0" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent
-                className="w-[--radix-popper-anchor-width] min-w-56"
-                align="start"
-                side="bottom"
-                sideOffset={4}
-              >
-                <DropdownMenuLabel className="text-xs text-muted-foreground">
-                  Workspaces
-                </DropdownMenuLabel>
-                {companies.map((company) => (
-                  <DropdownMenuItem
-                    key={company.slug}
-                    onSelect={() => navigate(`/my-company/${company.slug}`)}
-                    className="gap-2 p-2"
-                  >
-                    <div className="flex size-6 items-center justify-center rounded-sm border bg-background shrink-0">
-                      {company.companyImage ? (
-                        <img
-                          src={company.companyImage}
-                          alt={company.name}
-                          className="size-full rounded-sm object-cover"
-                        />
-                      ) : (
-                        <Building2 className="size-3.5 shrink-0" />
-                      )}
-                    </div>
-                    <span className="truncate">{company.name}</span>
-                    {company.slug === slug && (
-                      <ChevronDown className="ml-auto size-3 -rotate-90 opacity-60" />
-                    )}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <SidebarMenuButton size="lg" className="cursor-default hover:bg-transparent active:bg-transparent">
+              <div className={`flex aspect-square size-8 items-center justify-center rounded-md shrink-0 ${
+                companyError
+                  ? "bg-destructive/10 text-destructive"
+                  : "bg-sidebar-primary text-sidebar-primary-foreground"
+              }`}>
+                {companyError ? (
+                  <ShieldOff className="size-4" />
+                ) : company?.companyImage ? (
+                  <img
+                    src={company.companyImage}
+                    alt={company.name}
+                    className="size-full rounded-md object-cover"
+                  />
+                ) : (
+                  <Building2 className="size-4" />
+                )}
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                {loadingCompany ? (
+                  <Skeleton className="h-3.5 w-24" />
+                ) : companyError ? (
+                  <>
+                    <span className="truncate font-semibold text-destructive">Sem acesso</span>
+                    <span className="truncate text-xs text-destructive/70">{companyError}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="truncate font-semibold">
+                      {company?.name ?? "Empresa"}
+                    </span>
+                    <span className="truncate text-xs text-muted-foreground capitalize">
+                      {company?.plan.toLowerCase() ?? "—"}
+                    </span>
+                  </>
+                )}
+              </div>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

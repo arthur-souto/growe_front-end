@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CompanyService } from "@/api/services/company-service"
+import { getApiErrorMessage } from "@/api/api-error"
 import { useUser } from "@/hooks/useUser"
 import type { CompanyMemberRole, ResumeMemberResponse } from "@/api/model"
 import {
@@ -59,7 +60,7 @@ export default function MembersPage() {
     companyService
       .getMembers(slug)
       .then((res) => setMembers(res.data.content))
-      .catch(() => toast.error("Erro ao carregar membros."))
+      .catch((err) => toast.error(getApiErrorMessage(err, "Erro ao carregar membros.")))
       .finally(() => setLoading(false))
   }
 
@@ -69,7 +70,7 @@ export default function MembersPage() {
     () => members.find((m) => m.email === user?.email)?.role ?? null,
     [members, user]
   )
-  const canManage = myRole === "OWNER" || myRole === "RH"
+  const canManage = myRole === "OWNER" || myRole === "ADMIN" || myRole === "MANAGER" || myRole === "RH"
   const canAssignOwner = myRole === "OWNER"
 
   const filtered = useMemo(() => {
@@ -116,7 +117,7 @@ export default function MembersPage() {
   }
 
   const stats = useMemo(() => {
-    const c: Record<CompanyMemberRole, number> = { OWNER: 0, RH: 0, MANAGER: 0, EMPLOYEE: 0 }
+    const c: Record<CompanyMemberRole, number> = { ADMIN: 0, OWNER: 0, RH: 0, MANAGER: 0, EMPLOYEE: 0 }
     members.forEach((m) => { if (m.role in c) c[m.role]++ })
     return c
   }, [members])
@@ -153,7 +154,7 @@ export default function MembersPage() {
       </div>
 
       <div className="px-6 py-6 space-y-6">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {ALL_ROLES.map((role) => {
             const active = roleFilter === role
             const cfg = ROLE_CONFIG[role]

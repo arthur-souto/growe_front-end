@@ -35,24 +35,39 @@ export const routes = createBrowserRouter([
         Component: lazy(() => import("./layouts/company-layout.tsx")),
         children: [
           {
-            index: true,
-            Component: lazy(
-              () => import("./features/companies/company-space.tsx")
-            ),
-          },
-          {
-            path: "configuracoes",
-            Component: lazy(
-              () => import("./features/companies/company-settings.tsx")
-            ),
-          },
-          {
-            path: "membros",
-            Component: lazy(
-              () => import("./features/companies/members/members-page.tsx")
-            ),
+            Component: lazy(() => import("./components/protected-company-route.tsx")),
+            children: [
+              {
+                index: true,
+                Component: lazy(
+                  () => import("./features/companies/company-space.tsx")
+                ),
+              },
+              {
+                path: "configuracoes",
+                Component: lazy(
+                  () => import("./features/companies/company-settings.tsx")
+                ),
+              },
+              {
+                path: "membros",
+                Component: lazy(
+                  () => import("./features/companies/members/members-page.tsx")
+                ),
+              },
+              {
+                path: "ciclos",
+                Component: lazy(
+                  () => import("./features/companies/cycles/cycles-page.tsx")
+                ),
+              },
+            ],
           },
         ],
+      },
+      {
+        path: "/unauthorized",
+        Component: lazy(() => import("./features/unauthorized.tsx")),
       },
     ],
   },

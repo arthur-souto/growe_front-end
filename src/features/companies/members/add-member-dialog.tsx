@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { CompanyService } from "@/api/services/company-service"
+import { getApiErrorMessage } from "@/api/api-error"
 import type { CompanyMemberRole, CreateCompanyMemberRequest, ResumeMemberResponse } from "@/api/model"
 import { ALL_ROLES, ROLE_CONFIG } from "./members.config"
 
@@ -89,8 +90,8 @@ export function AddMemberDialog({ open, onClose, onCreated, slug, canAssignOwner
       setForm({ fullName: "", email: "", password: "", role: "EMPLOYEE" })
       setErrors({})
       onClose()
-    } catch {
-      toast.error("Erro ao adicionar membro. Verifique os dados e tente novamente.")
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Erro ao adicionar membro. Verifique os dados e tente novamente."))
     } finally {
       setSaving(false)
     }

@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { CompanyService } from "@/api/services/company-service"
+import { getApiErrorMessage } from "@/api/api-error"
 import type { ImportSummaryResponse } from "@/api/model"
 
 const companyService = new CompanyService()
@@ -83,10 +84,8 @@ export function ImportMembersDialog({ open, onClose, slug, onImported }: Props) 
       setState("success")
       toast.success(`Importação concluída: ${data.created} criados, ${data.skipped} ignorados.`)
       onImported()
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Erro ao importar membros."
+    } catch (err) {
+      const msg = getApiErrorMessage(err, "Erro ao importar membros.")
       setErrorMessage(msg)
       setState("error")
       toast.error(msg)

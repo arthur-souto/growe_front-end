@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { CompanyService } from "@/api/services/company-service"
 import { navigationService } from "@/api/services/navigation-service"
+import { getApiErrorMessage } from "@/api/api-error"
 import type { CompanyDetailsResponse, SizeRange, UpdateCompanyRequest } from "@/api/model"
 
 const companyService = new CompanyService()
@@ -147,7 +148,7 @@ export default function CompanySettings() {
           companyImage: res.data.companyImage ?? "",
         })
       })
-      .catch(() => toast.error("Erro ao carregar configurações."))
+      .catch((err) => toast.error(getApiErrorMessage(err, "Erro ao carregar configurações.")))
       .finally(() => setLoading(false))
   }, [slug])
 
@@ -164,8 +165,8 @@ export default function CompanySettings() {
       const res = await companyService.getCompany(slug)
       setCompany(res.data)
       toast.success("Informações atualizadas.")
-    } catch {
-      toast.error("Erro ao salvar.")
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Erro ao salvar."))
     } finally {
       setSavingGeneral(false)
     }
@@ -183,8 +184,8 @@ export default function CompanySettings() {
       })
       toast.success("Nome atualizado.")
       navigationService.navigate("/home", { replace: true })
-    } catch {
-      toast.error("Erro ao atualizar nome.")
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Erro ao atualizar nome."))
       setSavingName(false)
     }
   }
@@ -202,8 +203,8 @@ export default function CompanySettings() {
       const res = await companyService.getCompany(slug)
       setCompany(res.data)
       toast.success("Aparência atualizada.")
-    } catch {
-      toast.error("Erro ao salvar.")
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Erro ao salvar."))
     } finally {
       setSavingAppearance(false)
     }
@@ -216,8 +217,8 @@ export default function CompanySettings() {
       await companyService.deleteCompany(slug)
       toast.success("Empresa excluída.")
       navigationService.navigate("/home", { replace: true })
-    } catch {
-      toast.error("Erro ao excluir empresa.")
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Erro ao excluir empresa."))
       setDeleting(false)
     }
   }
