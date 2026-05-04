@@ -138,6 +138,7 @@ export interface CycleResumeResponse {
   name: string
   description: string
   color: string
+  tasksCount: number
   isActive: boolean
   startDate: string
   endDate: string
@@ -159,6 +160,46 @@ export interface CycleStatusSummary {
 
 export interface PagedModelCycleResumeResponse {
   content: CycleResumeResponse[]
+  page: {
+    size: number
+    number: number
+    totalElements: number
+    totalPages: number
+  }
+}
+
+export type AssessmentType = "SELF" | "PEER" | "MANAGER"
+export type TaskStatus = "PENDING" | "DONE"
+
+export interface ResumeMemberTaskResponse {
+  id: string
+  fullName: string
+  email: string
+}
+
+export interface EvaluationTaskResponse {
+  id: string
+  cycleId: string
+  creatorName: ResumeMemberTaskResponse
+  evaluatorName: ResumeMemberTaskResponse
+  evaluatedName: ResumeMemberTaskResponse
+  assessmentType: AssessmentType
+  status: TaskStatus
+  deadline: string
+  completedAt: string | null
+  createdAt: string
+}
+
+export interface CreateEvaluationTaskRequest {
+  cycleId: string
+  evaluatorId: string
+  evaluatedId: string
+  assessmentType: AssessmentType
+  deadline: string
+}
+
+export interface PagedModelEvaluationTaskResponse {
+  content: EvaluationTaskResponse[]
   page: {
     size: number
     number: number

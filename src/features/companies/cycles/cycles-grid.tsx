@@ -1,4 +1,4 @@
-import { CalendarDays, CalendarRange, ChevronLeft, ChevronRight } from "lucide-react"
+import { CalendarDays, CalendarRange, ChevronLeft, ChevronRight, ClipboardList } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -35,11 +35,20 @@ function StatusBadge({ isActive }: { isActive: boolean }) {
   )
 }
 
-function CycleCard({ cycle }: { cycle: CycleResumeResponse }) {
+function CycleCard({
+  cycle,
+  onSelect,
+}: {
+  cycle: CycleResumeResponse
+  onSelect?: (cycle: CycleResumeResponse) => void
+}) {
   return (
     <Card
-      className="rounded-none shadow-none flex flex-col border-l-4"
+      className={`rounded-none shadow-none flex flex-col border-l-4 transition-colors ${
+        onSelect ? "cursor-pointer hover:bg-muted/40" : ""
+      }`}
       style={{ borderLeftColor: cycle.color || "#6366f1" }}
+      onClick={() => onSelect?.(cycle)}
     >
       <CardHeader className="p-5 pb-4 space-y-0">
         <div className="flex items-start justify-between gap-3">
@@ -60,6 +69,14 @@ function CycleCard({ cycle }: { cycle: CycleResumeResponse }) {
             {fmtDateTime(cycle.startDate)}
             <span className="mx-1.5 opacity-40">→</span>
             {fmtDateTime(cycle.endDate)}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <ClipboardList className="size-3.5 shrink-0" />
+          <span>
+            <span className="font-medium text-foreground">{cycle.tasksCount ?? 0}</span>
+            {" "}tarefa{cycle.tasksCount !== 1 ? "s" : ""}
           </span>
         </div>
 
@@ -129,9 +146,10 @@ interface Props {
   totalPages: number
   totalItems: number
   onPageChange: (p: number) => void
+  onCycleClick?: (cycle: CycleResumeResponse) => void
 }
 
-export function CyclesGrid({ cycles, loading, page, totalPages, totalItems, onPageChange }: Props) {
+export function CyclesGrid({ cycles, loading, page, totalPages, totalItems, onPageChange, onCycleClick }: Props) {
   const start = page * PAGE_SIZE + 1
   const end = Math.min((page + 1) * PAGE_SIZE, totalItems)
 
@@ -143,7 +161,9 @@ export function CyclesGrid({ cycles, loading, page, totalPages, totalItems, onPa
         ) : cycles.length === 0 ? (
           <EmptyState />
         ) : (
-          cycles.map((cycle) => <CycleCard key={cycle.id} cycle={cycle} />)
+          cycles.map((cycle) => (
+            <CycleCard key={cycle.id} cycle={cycle} onSelect={onCycleClick} />
+          ))
         )}
       </div>
 

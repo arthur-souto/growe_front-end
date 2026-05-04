@@ -162,6 +162,7 @@ export function CreateCycleDialog({ open, slug, onClose, onCreated }: Props) {
         name: payload.name,
         description: payload.description,
         color: payload.color,
+        tasksCount: 0,
         isActive: false,
         startDate: payload.startDate,
         endDate: payload.endDate,

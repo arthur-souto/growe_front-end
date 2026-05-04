@@ -1,13 +1,12 @@
-import { useState, useEffect, useMemo } from "react"
-import { useParams } from "react-router"
-import { toast } from "sonner"
+import { useState, useMemo, useEffect } from "react"
+import { useParams, Navigate } from "react-router"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Plus, Upload } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CompanyService } from "@/api/services/company-service"
-import { getApiErrorMessage } from "@/api/api-error"
 import { useUser } from "@/hooks/useUser"
 import type { CompanyMemberRole, ResumeMemberResponse } from "@/api/model"
 import {
@@ -32,8 +31,7 @@ export default function MembersPage() {
   const { slug } = useParams<{ slug: string }>()
   const { user } = useUser()
 
-  const [members, setMembers] = useState<ResumeMemberResponse[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [addOpen, setAddOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [selected, setSelected] = useState<ResumeMemberResponse | null>(null)
@@ -47,6 +45,12 @@ export default function MembersPage() {
   const [sortDir, setSortDir] = useState<SortDir>("asc")
   const [page, setPage] = useState(0)
 
+  const { data: members = [], isLoading: loading } = useQuery({
+    queryKey: ["members", slug],
+    queryFn: () => companyService.getMembers(slug!, 0, 500).then((r) => r.data.content),
+    enabled: !!slug,
+  })
+
   useEffect(() => {
     const t = setTimeout(() => setSearch(searchInput), 300)
     return () => clearTimeout(t)
@@ -55,16 +59,8 @@ export default function MembersPage() {
   const hasFilters = searchInput !== "" || roleFilter !== "ALL"
 
   function reloadMembers() {
-    if (!slug) return
-    setLoading(true)
-    companyService
-      .getMembers(slug)
-      .then((res) => setMembers(res.data.content))
-      .catch((err) => toast.error(getApiErrorMessage(err, "Erro ao carregar membros.")))
-      .finally(() => setLoading(false))
+    queryClient.invalidateQueries({ queryKey: ["members", slug] })
   }
-
-  useEffect(() => { reloadMembers() }, [slug])
 
   const myRole = useMemo(
     () => members.find((m) => m.email === user?.email)?.role ?? null,
@@ -107,12 +103,16 @@ export default function MembersPage() {
   }
 
   function handleRoleUpdated(email: string, role: CompanyMemberRole) {
-    setMembers((prev) => prev.map((m) => (m.email === email ? { ...m, role } : m)))
+    queryClient.setQueryData<ResumeMemberResponse[]>(["members", slug], (prev = []) =>
+      prev.map((m) => (m.email === email ? { ...m, role } : m))
+    )
     setSelected((prev) => (prev?.email === email ? { ...prev, role } : prev))
   }
 
   function handleRemoved(email: string) {
-    setMembers((prev) => prev.filter((m) => m.email !== email))
+    queryClient.setQueryData<ResumeMemberResponse[]>(["members", slug], (prev = []) =>
+      prev.filter((m) => m.email !== email)
+    )
     if (selected?.email === email) setSelected(null)
   }
 
@@ -123,6 +123,8 @@ export default function MembersPage() {
   }, [members])
 
   const firstName = user?.fullName?.split(" ")[0] ?? "Usuário"
+
+  if (!loading && myRole === "EMPLOYEE") return <Navigate to="/unauthorized" replace />
 
   return (
     <div className="flex-1 overflow-auto">
@@ -232,7 +234,9 @@ export default function MembersPage() {
           onClose={() => setAddOpen(false)}
           slug={slug}
           canAssignOwner={canAssignOwner}
-          onCreated={(m) => setMembers((prev) => [m, ...prev])}
+          onCreated={(m) =>
+            queryClient.setQueryData<ResumeMemberResponse[]>(["members", slug], (prev = []) => [m, ...prev])
+          }
         />
       )}
 

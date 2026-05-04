@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
+import { useMemo } from "react"
 import { Navigate, Outlet, useParams } from "react-router"
+import { useQuery } from "@tanstack/react-query"
 import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/hooks/useAuth"
 import { CompanyService } from "@/api/services/company-service"
@@ -7,36 +8,27 @@ import type { CompanyMemberRole } from "@/api/model"
 
 const companyService = new CompanyService()
 
-const ALLOWED_ROLES: CompanyMemberRole[] = ["OWNER", "RH", "MANAGER", "ADMIN"]
-
-type Status = "loading" | "allowed" | "denied"
+const ALLOWED_ROLES: CompanyMemberRole[] = ["OWNER", "RH", "MANAGER", "ADMIN", "EMPLOYEE"]
 
 export default function ProtectedCompanyRoute() {
   const { slug } = useParams<{ slug: string }>()
   // useAuth ensures session is hydrated even on direct navigation to company routes
   const { user, isLoading: authLoading } = useAuth()
-  const [status, setStatus] = useState<Status>("loading")
 
-  useEffect(() => {
-    // Wait until session check is done and we have a user + slug
-    if (authLoading || !user || !slug) return
+  const { data: members, isLoading: membersLoading, isError } = useQuery({
+    queryKey: ["members", slug],
+    queryFn: () => companyService.getMembers(slug!, 0, 500).then((r) => r.data.content),
+    enabled: !!slug && !authLoading && !!user,
+  })
 
-    companyService
-      .getMembers(slug, 0, 500)
-      .then((res) => {
-        const member = res.data.content.find((m) => m.email === user.email)
-        if (!member || !ALLOWED_ROLES.includes(member.role)) {
-          setStatus("denied")
-        } else {
-          setStatus("allowed")
-        }
-      })
-      .catch(() => {
-        // 401 → axios interceptor redirects to /sign-in
-        // other errors → deny access
-        setStatus("denied")
-      })
-  }, [slug, user, authLoading])
+  const status = useMemo(() => {
+    if (authLoading || !user || !slug || membersLoading) return "loading"
+    // 401 → axios interceptor redirects to /sign-in; other errors → deny
+    if (isError || !members) return "denied"
+    const member = members.find((m) => m.email === user.email)
+    if (!member || !ALLOWED_ROLES.includes(member.role)) return "denied"
+    return "allowed"
+  }, [authLoading, membersLoading, isError, members, user, slug])
 
   if (status === "loading") {
     return (

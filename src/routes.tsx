@@ -61,6 +61,12 @@ export const routes = createBrowserRouter([
                   () => import("./features/companies/cycles/cycles-page.tsx")
                 ),
               },
+              {
+                path: "ciclos/:cycleId/tarefas",
+                Component: lazy(
+                  () => import("./features/companies/tasks/tasks-page.tsx")
+                ),
+              },
             ],
           },
         ],

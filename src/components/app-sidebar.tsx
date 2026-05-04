@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
 import { NavLink, useParams } from "react-router"
+import { useQuery } from "@tanstack/react-query"
 import {
   Building2,
   CalendarRange,
@@ -38,16 +38,15 @@ import { useUser } from "@/hooks/useUser"
 import { useAuth } from "@/hooks/useAuth"
 import { CompanyService } from "@/api/services/company-service"
 import { getApiErrorMessage } from "@/api/api-error"
-import type { CompanyDetailsResponse } from "@/api/model"
 
 const companyService = new CompanyService()
 
-const NAV_ITEMS = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "" },
-  { label: "Membros", icon: Users, path: "/membros" },
-  { label: "Ciclos", icon: CalendarRange, path: "/ciclos" },
-  { label: "Configurações", icon: Settings, path: "/configuracoes" },
-]
+const ALL_NAV_ITEMS = [
+  { label: "Dashboard", icon: LayoutDashboard, path: "", roles: ["OWNER", "RH", "MANAGER", "ADMIN", "EMPLOYEE"] },
+  { label: "Membros",   icon: Users,           path: "/membros",       roles: ["OWNER", "RH", "MANAGER", "ADMIN"] },
+  { label: "Ciclos",    icon: CalendarRange,    path: "/ciclos",        roles: null },
+  { label: "Configurações", icon: Settings,    path: "/configuracoes", roles: ["OWNER", "RH", "MANAGER", "ADMIN"] },
+] as const
 
 function getInitials(name: string) {
   return name
@@ -62,20 +61,18 @@ export function AppSidebar() {
   const { slug } = useParams<{ slug: string }>()
   const { user } = useUser()
   const { logout } = useAuth()
-  const [company, setCompany] = useState<CompanyDetailsResponse | null>(null)
-  const [loadingCompany, setLoadingCompany] = useState(true)
-  const [companyError, setCompanyError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!slug) return
-    setLoadingCompany(true)
-    setCompanyError(null)
-    companyService
-      .getCompany(slug)
-      .then((res) => { setCompany(res.data); setCompanyError(null) })
-      .catch((err) => { setCompany(null); setCompanyError(getApiErrorMessage(err, "Erro ao carregar empresa")) })
-      .finally(() => setLoadingCompany(false))
-  }, [slug])
+  const { data: company, isLoading: loadingCompany, isError, error } = useQuery({
+    queryKey: ["company", slug],
+    queryFn: () => companyService.getCompany(slug!).then((r) => r.data),
+    enabled: !!slug,
+  })
+  const companyError = isError ? getApiErrorMessage(error, "Erro ao carregar empresa") : null
+
+  const myRole = company?.members.find((m) => m.email === user?.email)?.role ?? null
+  const navItems = ALL_NAV_ITEMS.filter(
+    (item) => item.roles === null || (myRole && (item.roles as readonly string[]).includes(myRole))
+  )
 
   return (
     <Sidebar collapsible="icon">
@@ -133,7 +130,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navegação</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {NAV_ITEMS.map(({ label, icon: Icon, path }) => (
+              {navItems.map(({ label, icon: Icon, path }) => (
                 <SidebarMenuItem key={label}>
                   <NavLink
                     to={`/my-company/${slug}${path}`}

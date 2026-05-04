@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from "react"
-import { useParams } from "react-router"
+import { useState, useMemo } from "react"
+import { useParams, useNavigate } from "react-router"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Plus, RefreshCw } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -26,14 +27,24 @@ function useCompanyRole(members: ResumeMemberResponse[], userEmail?: string) {
 
 export default function CyclesPage() {
   const { slug } = useParams<{ slug: string }>()
+  const navigate = useNavigate()
   const { user } = useUser()
 
-  const [cycles, setCycles] = useState<CycleResumeResponse[]>([])
-  const [members, setMembers] = useState<ResumeMemberResponse[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [refreshing, setRefreshing] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [page, setPage] = useState(0)
+
+  const { data: cycles = [], isLoading: loading } = useQuery({
+    queryKey: ["cycles", slug],
+    queryFn: () => cycleService.getCycles(slug!).then((r) => r.data.content),
+    enabled: !!slug,
+  })
+  const { data: members = [] } = useQuery({
+    queryKey: ["members", slug],
+    queryFn: () => companyService.getMembers(slug!, 0, 500).then((r) => r.data.content),
+    enabled: !!slug,
+  })
 
   const myRole = useCompanyRole(members, user?.email)
   const canManage = myRole === "OWNER" || myRole === "RH"
@@ -46,27 +57,13 @@ export default function CyclesPage() {
   const currentPage = Math.min(page, totalPages - 1)
   const paginated = sorted.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
 
-  function loadData() {
-    if (!slug) return
-    setLoading(true)
-    Promise.all([cycleService.getCycles(slug), companyService.getMembers(slug)])
-      .then(([cyclesRes, membersRes]) => {
-        setCycles(cyclesRes.data.content)
-        setMembers(membersRes.data.content)
-      })
-      .catch((err) => toast.error(getApiErrorMessage(err, "Erro ao carregar ciclos.")))
-      .finally(() => setLoading(false))
-  }
-
-  useEffect(() => { loadData() }, [slug])
-
   async function handleRefresh() {
     if (!slug) return
     setRefreshing(true)
     try {
       const res = await cycleService.refreshCycles(slug)
       toast.success(buildRefreshMessage(res.data.activated, res.data.closed))
-      loadData()
+      queryClient.invalidateQueries({ queryKey: ["cycles", slug] })
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Erro ao atualizar status dos ciclos."))
     } finally {
@@ -75,7 +72,7 @@ export default function CyclesPage() {
   }
 
   function handleCycleCreated(cycle: CycleResumeResponse) {
-    setCycles((prev) => [cycle, ...prev])
+    queryClient.setQueryData<CycleResumeResponse[]>(["cycles", slug], (prev = []) => [cycle, ...prev])
     setPage(0)
   }
 
@@ -124,6 +121,9 @@ export default function CyclesPage() {
           totalPages={totalPages}
           totalItems={sorted.length}
           onPageChange={setPage}
+          onCycleClick={(cycle) =>
+            navigate(`/my-company/${slug}/ciclos/${cycle.id}/tarefas`, { state: cycle })
+          }
         />
       </div>
 

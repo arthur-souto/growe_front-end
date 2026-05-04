@@ -1,4 +1,4 @@
-import { ArrowUpDown, CalendarRange, ChevronLeft, ChevronRight } from "lucide-react"
+import { ArrowUpDown, CalendarRange, ChevronLeft, ChevronRight, ClipboardList } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -22,6 +22,7 @@ function RowSkeleton() {
       <TableCell><Skeleton className="h-3 w-32" /></TableCell>
       <TableCell><Skeleton className="h-3 w-32" /></TableCell>
       <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+      <TableCell><Skeleton className="h-3 w-10" /></TableCell>
       <TableCell><Skeleton className="h-3 w-24" /></TableCell>
     </TableRow>
   )
@@ -76,7 +77,7 @@ function StatusBadge({ isActive }: { isActive: boolean }) {
 function EmptyState() {
   return (
     <TableRow className="hover:bg-transparent">
-      <TableCell colSpan={5}>
+      <TableCell colSpan={6}>
         <div className="flex flex-col items-center gap-3 py-14 text-center">
           <div className="flex size-10 items-center justify-center border bg-muted">
             <CalendarRange className="size-4 text-muted-foreground" />
@@ -137,6 +138,12 @@ export function CyclesTable({
                 Status
               </span>
             </TableHead>
+            <TableHead className="w-24 h-9">
+              <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <ClipboardList className="size-3" />
+                Tarefas
+              </span>
+            </TableHead>
             <TableHead className="w-36 h-9">
               <SortButton label="Criado em" col="createdAt" {...sortProps} />
             </TableHead>
@@ -160,6 +167,9 @@ export function CyclesTable({
                 </TableCell>
                 <TableCell className="py-3">
                   <StatusBadge isActive={cycle.isActive} />
+                </TableCell>
+                <TableCell className="py-3 text-xs tabular-nums">
+                  {cycle.tasksCount ?? 0}
                 </TableCell>
                 <TableCell className="py-3 text-xs text-muted-foreground">
                   {fmtDate(cycle.createdAt)}
