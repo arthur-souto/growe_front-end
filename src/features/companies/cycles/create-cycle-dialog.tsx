@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { DateTimePicker } from "@/components/ui/date-time-picker"
 import {
   Dialog,
   DialogContent,
@@ -221,22 +222,18 @@ export function CreateCycleDialog({ open, slug, onClose, onCreated }: Props) {
           </Field>
 
           <Field id="cc-start" label="Data de Início" error={errors.startDate}>
-            <Input
+            <DateTimePicker
               id="cc-start"
-              type="datetime-local"
               value={form.startDate}
-              onChange={(e) => setField("startDate", e.target.value)}
-              className="rounded-none"
+              onChange={(v) => setField("startDate", v)}
             />
           </Field>
 
           <Field id="cc-end" label="Data de Fim" error={errors.endDate}>
-            <Input
+            <DateTimePicker
               id="cc-end"
-              type="datetime-local"
               value={form.endDate}
-              onChange={(e) => setField("endDate", e.target.value)}
-              className="rounded-none"
+              onChange={(v) => setField("endDate", v)}
             />
           </Field>
 

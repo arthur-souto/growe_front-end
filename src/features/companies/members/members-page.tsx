@@ -1,8 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { useParams, Navigate } from "react-router"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { Plus, Upload } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Plus, Upload, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -13,8 +12,6 @@ import {
   ALL_ROLES,
   PAGE_SIZE,
   ROLE_CONFIG,
-  getCurrentDate,
-  getInitials,
   type SortDir,
   type SortKey,
 } from "./members.config"
@@ -122,40 +119,37 @@ export default function MembersPage() {
     return c
   }, [members])
 
-  const firstName = user?.fullName?.split(" ")[0] ?? "Usuário"
-
   if (!loading && myRole === "EMPLOYEE") return <Navigate to="/unauthorized" replace />
 
   return (
     <div className="flex-1 overflow-auto">
-      <div className="border-b px-6 py-5 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Avatar className="size-9 shrink-0">
-            <AvatarImage src={user?.profileImage ?? undefined} alt={user?.fullName} />
-            <AvatarFallback className="bg-transparent text-xs font-semibold">
-              {user?.fullName ? getInitials(user.fullName) : "—"}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-sm font-semibold">Bem-vindo, {firstName}</h1>
-            <p className="mt-0.5 text-xs text-muted-foreground">{getCurrentDate()}</p>
+      <div className="border-b px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0">
+          <Users className="size-5 text-muted-foreground shrink-0" />
+          <div className="min-w-0">
+            <h1 className="text-sm font-semibold leading-none">Membros</h1>
+            <p className="mt-1 text-xs text-muted-foreground truncate">
+              {loading
+                ? "Carregando…"
+                : `${members.length} ${members.length === 1 ? "pessoa" : "pessoas"} na empresa · Gerencie funções e acessos`}
+            </p>
           </div>
         </div>
         {canManage && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
               <Upload className="size-3.5" />
-              Importar
+              <span className="hidden sm:inline">Importar</span>
             </Button>
             <Button size="sm" onClick={() => setAddOpen(true)}>
               <Plus className="size-3.5" />
-              Adicionar membro
+              <span className="hidden sm:inline">Adicionar membro</span>
             </Button>
           </div>
         )}
       </div>
 
-      <div className="px-6 py-6 space-y-6">
+      <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {ALL_ROLES.map((role) => {
             const active = roleFilter === role

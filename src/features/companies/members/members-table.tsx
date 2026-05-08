@@ -161,7 +161,8 @@ export function MembersTable({
         )}
       </div>
 
-      <Table>
+      <div className="overflow-x-auto">
+      <Table className="min-w-[520px]">
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b">
             <TableHead className="pl-5 h-9">
@@ -289,6 +290,7 @@ export function MembersTable({
           )}
         </TableBody>
       </Table>
+      </div>
 
       {!loading && totalPages > 1 && (
         <>

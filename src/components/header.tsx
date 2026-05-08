@@ -20,7 +20,7 @@ export default function Header() {
 
   return (
     <header className="border-b border-border bg-card">
-      <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
         {/* Nav Links */}
         <nav className="flex items-center gap-1">
           {NAV_LINKS.map(({ to, label, Icon }) => (

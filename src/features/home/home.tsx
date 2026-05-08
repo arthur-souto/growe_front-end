@@ -1,90 +1,81 @@
-import { useAuth } from "@/hooks/useAuth"
 import { useNavigate } from "react-router"
+import { Building2, ChevronRight, ClipboardCheck, ListTodo, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardDescription} from "@/components/ui/card"
-import { Rocket, Users, BarChart3, Settings, Building2, Hand } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
 
-const TUTORIALS = [
+const FEATURES = [
   {
-    id: 1,
-    title: "Primeiros Passos",
-    description: "Aprenda o básico sobre como gerenciar suas empresas e projetos",
-    Icon: Rocket,
+    icon: ClipboardCheck,
+    title: "Ciclos de Avaliação",
+    description:
+      "Crie períodos de avaliação estruturados com datas de início e fim. Organize quem avalia quem dentro de cada ciclo.",
   },
   {
-    id: 2,
-    title: "Gestão de Usuários",
-    description: "Entenda como gerenciar membros da equipe e permissões",
-    Icon: Users,
+    icon: Users,
+    title: "Avaliação 360°",
+    description:
+      "Combine autoavaliação, avaliação por pares e avaliação por gestores para uma visão completa do desempenho.",
   },
   {
-    id: 3,
-    title: "Análises e Relatórios",
-    description: "Acompanhe suas métricas de negócio e gere relatórios",
-    Icon: BarChart3,
-  },
-  {
-    id: 4,
-    title: "Integração via API",
-    description: "Integre com serviços de terceiros usando nossa API",
-    Icon: Settings,
+    icon: ListTodo,
+    title: "Tarefas de Avaliação",
+    description:
+      "Cada membro recebe suas tarefas com prazo definido. Acompanhe pendências e garanta que nenhuma avaliação fique em aberto.",
   },
 ]
 
 export default function Home() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const firstName = user?.fullName?.split(" ")[0] ?? "Usuário"
 
   return (
-    <section className="w-full flex-1">
-      <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-        {/* Welcome Section */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-semibold text-foreground">
-              <Hand className="size-6 text-primary" />
-              Olá, {user?.fullName?.split(" ")[0]}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Bem-vindo de volta ao Growe. O que vamos fazer hoje?
-            </p>
-          </div>
-          <Button onClick={() => navigate("/home/companies")}>
-            <Building2 className="mr-2 size-4" />
-            Minhas empresas
-          </Button>
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 gap-8">
-          {/* Tutorials Section */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-semibold text-foreground">Tutoriais</h2>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {TUTORIALS.map((tutorial) => (
-                <Card
-                  key={tutorial.id}
-                  size="sm"
-                  className="group cursor-pointer transition-all hover:ring-accent/50 hover:shadow-md"
-                >
-                  <CardHeader>
-                    <div className="space-y-2">
-                      <tutorial.Icon className="size-6 text-primary" />
-                      <CardTitle className="text-sm">{tutorial.title}</CardTitle>
-                      <CardDescription className="text-xs leading-relaxed">
-                        {tutorial.description}
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-            <Button variant="secondary" className="w-full">
-              Ver todos os tutoriais
+    <div className="flex flex-1 flex-col">
+      {/* Hero */}
+      <div className="border-b px-6 py-12 sm:px-10">
+        <div className="mx-auto max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
+            Growe — Gestão de Desempenho
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Olá, <span className="text-primary">{firstName}</span>
+          </h1>
+          <p className="mt-3 text-base text-muted-foreground leading-relaxed">
+            Bem-vindo de volta. Acesse sua empresa para ver ciclos de avaliação, gerenciar equipes
+            e acompanhar o desenvolvimento da sua organização.
+          </p>
+          <div className="mt-6 flex items-center gap-3">
+            <Button onClick={() => navigate("/home/companies")} className="gap-2">
+              <Building2 className="size-4" />
+              Minhas Empresas
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/home/companies")} className="gap-1.5">
+              Ver tudo
+              <ChevronRight className="size-3.5" />
             </Button>
           </div>
         </div>
       </div>
-    </section>
+
+      {/* Features */}
+      <div className="px-6 py-10 sm:px-10">
+        <div className="mx-auto max-w-2xl">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-5">
+            Como funciona
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {FEATURES.map(({ icon: Icon, title, description }) => (
+              <div key={title} className="border px-4 py-4 space-y-2.5">
+                <div className="flex size-8 items-center justify-center border bg-muted/50">
+                  <Icon className="size-4 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-semibold leading-none">{title}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

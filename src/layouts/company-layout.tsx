@@ -8,8 +8,10 @@ export default function CompanyLayout() {
     <TooltipProvider>
     <SidebarProvider>
       <AppSidebar />
-      <main className="w-full">
-        <SidebarTrigger />
+      <main className="flex flex-col flex-1 min-w-0">
+        <div className="flex items-center h-10 border-b px-2 md:hidden shrink-0">
+          <SidebarTrigger />
+        </div>
         <Outlet />
       </main>
     </SidebarProvider>

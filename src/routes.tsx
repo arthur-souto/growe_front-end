@@ -67,6 +67,24 @@ export const routes = createBrowserRouter([
                   () => import("./features/companies/tasks/tasks-page.tsx")
                 ),
               },
+              {
+                path: "competencias",
+                Component: lazy(
+                  () => import("./features/companies/competencies/competencies-page.tsx")
+                ),
+              },
+              {
+                path: "avaliacoes",
+                Component: lazy(
+                  () => import("./features/companies/assessments/assessments-page.tsx")
+                ),
+              },
+              {
+                path: "minhas-tarefas",
+                Component: lazy(
+                  () => import("./features/companies/tasks/my-tasks-page.tsx")
+                ),
+              },
             ],
           },
         ],

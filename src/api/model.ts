@@ -207,3 +207,83 @@ export interface PagedModelEvaluationTaskResponse {
     totalPages: number
   }
 }
+
+export interface AssessmentAnswerResponse {
+  competencyId: string
+  competencyName: string
+  competencyDescription: string | null
+  score: number
+  comment: string | null
+}
+
+export interface AssessmentResponse {
+  id: string
+  cycleId: string
+  cycleName: string
+  evaluator: ResumeMemberTaskResponse
+  evaluated: ResumeMemberTaskResponse
+  avgScore: number | null
+  comment: string | null
+  assessmentType: AssessmentType
+  taskId: string | null
+  answers: AssessmentAnswerResponse[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PagedModelAssessmentResponse {
+  content: AssessmentResponse[]
+  page: {
+    size: number
+    number: number
+    totalElements: number
+    totalPages: number
+  }
+}
+
+export interface AssessmentAnswerRequest {
+  competencyId: string
+  score: number
+  comment?: string
+}
+
+export interface SubmitAssessmentRequest {
+  comment?: string
+  answers: AssessmentAnswerRequest[]
+}
+
+export interface CompetencyResponse {
+  id: string
+  name: string
+  description: string
+  createdAt: string
+}
+
+export interface CreateCompetencyRequest {
+  name: string
+  description?: string
+}
+
+export interface LinkCompetencyRequest {
+  competencyId: string
+}
+
+export interface ImproveCommentRequest {
+  comment: string
+  score: number
+  assessmentType: AssessmentType
+}
+
+export interface PagedModelCompetencyResponse {
+  content: CompetencyResponse[]
+  page: {
+    size: number
+    number: number
+    totalElements: number
+    totalPages: number
+  }
+}
+
+export interface ImproveCommentResponse {
+  response: string
+}

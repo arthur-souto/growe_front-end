@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { useParams, useNavigate } from "react-router"
 import { useQuery } from "@tanstack/react-query"
-import { Users, CalendarRange, Building2, ArrowRight, Layers, Clock } from "lucide-react"
+import { Users, CalendarRange, Building2, ArrowRight, Layers, Clock, ListTodo } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -32,6 +32,14 @@ const PLAN_LABELS: Record<Plan, string> = {
   STARTER: "Starter",
   GROWTH: "Growth",
   ENTERPRISE: "Enterprise",
+}
+
+const ROLE_DESCRIPTIONS: Record<CompanyMemberRole, string> = {
+  EMPLOYEE: "Acompanhe seus ciclos de avaliação, envie suas respostas e veja o feedback que você recebeu.",
+  MANAGER: "Gerencie ciclos, atribua tarefas de avaliação e acompanhe o desempenho da equipe.",
+  ADMIN: "Administre membros, ciclos e tenha visibilidade completa das avaliações da empresa.",
+  OWNER: "Você tem controle total da empresa na plataforma — membros, ciclos e avaliações.",
+  RH: "Gerencie pessoas, coordene os ciclos de avaliação e analise os resultados da equipe.",
 }
 
 const SIZE_LABELS: Record<SizeRange, string> = {
@@ -162,22 +170,41 @@ function MemberSkeletons() {
 // Shared: welcome header + company info band
 // ---------------------------------------------------------------------------
 
-function WelcomeHeader({ user }: { user: ReturnType<typeof useUser>["user"] }) {
+function WelcomeHeader({
+  user,
+  myRole,
+}: {
+  user: ReturnType<typeof useUser>["user"]
+  myRole: CompanyMemberRole | null
+}) {
   const firstName = user?.fullName?.split(" ")[0] ?? "Usuário"
+  const roleCfg = myRole ? ROLE_CONFIG[myRole] : null
   return (
-    <div className="border-b px-6 py-8 from-primary/5 via-primary/3 to-transparent">
-      <div className="flex items-center gap-4">
-        <Avatar className="size-20 shrink-0 ring-2 ring-primary/20">
+    <div className="border-b px-4 sm:px-6 py-6 sm:py-8">
+      <div className="flex items-center gap-4 sm:gap-5 flex-wrap">
+        <Avatar className="size-12 sm:size-16 shrink-0 ring-2 ring-primary/20">
           <AvatarImage src={user?.profileImage ?? undefined} alt={user?.fullName} />
-          <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+          <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
             {user?.fullName ? getInitials(user.fullName) : "—"}
           </AvatarFallback>
         </Avatar>
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight">
-            Bem-vindo, <span className="text-primary">{firstName}</span>
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">{getCurrentDate()}</p>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Olá, <span className="text-primary">{firstName}</span>
+            </h1>
+            {roleCfg && (
+              <span className={`text-[10px] font-semibold uppercase tracking-widest border px-2 py-0.5 shrink-0 ${roleCfg.pill}`}>
+                {roleCfg.label}
+              </span>
+            )}
+          </div>
+          {myRole && (
+            <p className="mt-1.5 text-sm text-muted-foreground leading-snug max-w-lg">
+              {ROLE_DESCRIPTIONS[myRole]}
+            </p>
+          )}
+          <p className="mt-1 text-xs text-muted-foreground/50">{getCurrentDate()}</p>
         </div>
       </div>
     </div>
@@ -193,8 +220,8 @@ function CompanyInfoBand({
 }) {
   return (
     <Card className="rounded-none shadow-none gap-0 py-0">
-      <CardContent className="px-6 py-5">
-        <div className="flex items-center gap-4">
+      <CardContent className="px-4 sm:px-6 py-4 sm:py-5">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div className="size-12 shrink-0 border flex items-center justify-center bg-muted/30 overflow-hidden">
             {loading ? (
               <Skeleton className="size-full" />
@@ -232,7 +259,7 @@ function CompanyInfoBand({
               </>
             )}
           </div>
-          <div className="shrink-0 text-right">
+          <div className="hidden sm:block shrink-0 text-right">
             {loading ? (
               <Skeleton className="h-4 w-16 ml-auto" />
             ) : (
@@ -261,12 +288,14 @@ function CompanyInfoBand({
 function EmployeeDashboard({
   slug,
   user,
+  myRole,
   company,
   cycles,
   loading,
 }: {
   slug: string
   user: ReturnType<typeof useUser>["user"]
+  myRole: CompanyMemberRole | null
   company: CompanyDetailsResponse | null
   cycles: CycleResumeResponse[]
   loading: boolean
@@ -281,10 +310,28 @@ function EmployeeDashboard({
 
   return (
     <div className="flex-1 overflow-auto">
-      <WelcomeHeader user={user} />
+      <WelcomeHeader user={user} myRole={myRole} />
 
-      <div className="px-6 py-6 space-y-6">
+      <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
         <CompanyInfoBand company={company} loading={loading} />
+
+        {/* Quick action */}
+        <button
+          type="button"
+          onClick={() => navigate(`/my-company/${slug}/minhas-tarefas`)}
+          className="w-full flex items-center gap-4 border px-5 py-4 text-left transition-colors hover:bg-accent"
+        >
+          <div className="flex size-9 shrink-0 items-center justify-center border bg-muted/50">
+            <ListTodo className="size-4 text-muted-foreground" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold leading-none">Minhas Tarefas</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Veja avaliações pendentes, concluídas e todo o feedback que você recebeu
+            </p>
+          </div>
+          <ArrowRight className="size-4 text-muted-foreground shrink-0" />
+        </button>
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
@@ -368,12 +415,14 @@ function EmployeeDashboard({
 function ManagerDashboard({
   slug,
   user,
+  myRole,
   company,
   cycles,
   loading,
 }: {
   slug: string
   user: ReturnType<typeof useUser>["user"]
+  myRole: CompanyMemberRole | null
   company: CompanyDetailsResponse | null
   cycles: CycleResumeResponse[]
   loading: boolean
@@ -403,9 +452,9 @@ function ManagerDashboard({
 
   return (
     <div className="flex-1 overflow-auto">
-      <WelcomeHeader user={user} />
+      <WelcomeHeader user={user} myRole={myRole} />
 
-      <div className="px-6 py-6 space-y-6">
+      <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
         <CompanyInfoBand company={company} loading={loading} />
 
         {/* Metric cards */}
@@ -586,7 +635,7 @@ export default function CompanySpace() {
   const myRole = company?.members.find((m) => m.email === user?.email)?.role ?? null
   const isEmployee = myRole === "EMPLOYEE"
 
-  const props = { slug: slug!, user, company: company ?? null, cycles, loading }
+  const props = { slug: slug!, user, myRole, company: company ?? null, cycles, loading }
 
   return isEmployee ? <EmployeeDashboard {...props} /> : <ManagerDashboard {...props} />
 }

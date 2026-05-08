@@ -4,10 +4,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
   ArrowLeft,
+  BookOpen,
   CalendarDays,
   ClipboardList,
+  Link2,
+  Link2Off,
   Plus,
   Search,
+  X,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -20,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { DateTimePicker } from "@/components/ui/date-time-picker"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -39,18 +44,22 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { CompanyService } from "@/api/services/company-service"
+import { CompetencyService } from "@/api/services/competency-service"
 import { CycleService } from "@/api/services/cycle-service"
 import { TaskService } from "@/api/services/task-service"
 import { getApiErrorMessage } from "@/api/api-error"
 import { useUser } from "@/hooks/useUser"
 import type {
   AssessmentType,
+  CompetencyResponse,
   CreateEvaluationTaskRequest,
   CycleResumeResponse,
 } from "@/api/model"
 import { fmtDate } from "../members/members.config"
+import { cn } from "@/lib/utils"
 
 const companyService = new CompanyService()
+const competencyService = new CompetencyService()
 const cycleService = new CycleService()
 const taskService = new TaskService()
 
@@ -66,9 +75,9 @@ function fmtDeadline(iso?: string) {
 }
 
 const ASSESSMENT_LABELS: Record<AssessmentType, string> = {
-  SELF: "Autoavaliação",
-  PEER: "Par",
-  MANAGER: "Gestor",
+  SELF: "Self",
+  PEER: "Peer",
+  MANAGER: "Manager",
 }
 
 const ASSESSMENT_STYLES: Record<AssessmentType, string> = {
@@ -175,6 +184,180 @@ function Field({
 }
 
 // ---------------------------------------------------------------------------
+// Cycle competency management
+// ---------------------------------------------------------------------------
+
+interface CycleCompetenciesProps {
+  slug: string
+  cycleId: string
+  canManage: boolean
+}
+
+function CycleCompetencies({ slug, cycleId, canManage }: CycleCompetenciesProps) {
+  const queryClient = useQueryClient()
+  const [linkOpen, setLinkOpen] = useState(false)
+  const [selectedId, setSelectedId] = useState("")
+
+  const { data: linked = [], isLoading: loadingLinked } = useQuery({
+    queryKey: ["competencies", "cycle", cycleId],
+    queryFn: () => competencyService.listByCycle(cycleId).then((r) => r.data.content),
+    enabled: !!cycleId,
+  })
+
+  const { data: catalogPage, isLoading: loadingCatalog } = useQuery({
+    queryKey: ["competencies", slug],
+    queryFn: () => competencyService.listByCompany(slug, 0, 100).then((r) => r.data),
+    enabled: !!slug && canManage && linkOpen,
+  })
+
+  const linkedIds = new Set(linked.map((c: CompetencyResponse) => c.id))
+  const available = (catalogPage?.content ?? []).filter((c) => !linkedIds.has(c.id))
+
+  const linkMutation = useMutation({
+    mutationFn: (competencyId: string) =>
+      competencyService.linkToCycle(cycleId, { competencyId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["competencies", "cycle", cycleId] })
+      toast.success("Competência vinculada ao ciclo.")
+      setSelectedId("")
+      setLinkOpen(false)
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, "Erro ao vincular competência.")),
+  })
+
+  const unlinkMutation = useMutation({
+    mutationFn: (competencyId: string) =>
+      competencyService.unlinkFromCycle(cycleId, competencyId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["competencies", "cycle", cycleId] })
+      toast.success("Competência removida do ciclo.")
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, "Erro ao desvincular competência.")),
+  })
+
+  return (
+    <Card className="rounded-none shadow-none gap-0 py-0">
+      <CardHeader className="px-5 py-4 border-b">
+        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+          <BookOpen className="size-4 text-muted-foreground" />
+          Competências do Ciclo
+          {!loadingLinked && (
+            <span className="ml-auto text-xs font-normal text-muted-foreground tabular-nums">
+              {linked.length} {linked.length === 1 ? "competência" : "competências"}
+            </span>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        {loadingLinked ? (
+          <div className="flex flex-col">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-5 py-3 border-b last:border-0">
+                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+            ))}
+          </div>
+        ) : linked.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-8 text-center">
+            <div className="flex size-8 items-center justify-center border bg-muted">
+              <BookOpen className="size-3.5 text-muted-foreground" />
+            </div>
+            <p className="text-xs text-muted-foreground max-w-xs">
+              Nenhuma competência vinculada.{" "}
+              {canManage && "Vincule competências do catálogo para que os avaliadores as pontuem."}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col">
+            {linked.map((c: CompetencyResponse) => (
+              <div key={c.id} className="flex items-center gap-3 px-5 py-3 border-b last:border-0">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium leading-none">{c.name}</p>
+                  {c.description && (
+                    <p className="mt-0.5 text-xs text-muted-foreground truncate" title={c.description}>
+                      {c.description}
+                    </p>
+                  )}
+                </div>
+                {canManage && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
+                    disabled={unlinkMutation.isPending}
+                    onClick={() => unlinkMutation.mutate(c.id)}
+                    title="Remover do ciclo"
+                  >
+                    <Link2Off className="size-3.5" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {canManage && (
+          <div className="border-t px-5 py-3">
+            {linkOpen ? (
+              <div className="flex items-center gap-2">
+                <Select
+                  value={selectedId}
+                  onValueChange={setSelectedId}
+                  disabled={loadingCatalog}
+                >
+                  <SelectTrigger className="h-8 rounded-none flex-1 text-sm">
+                    <SelectValue placeholder={loadingCatalog ? "Carregando…" : "Selecionar competência…"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {available.length === 0 ? (
+                      <div className="py-3 text-center text-xs text-muted-foreground">
+                        Todas as competências já estão vinculadas.
+                      </div>
+                    ) : (
+                      available.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                <Button
+                  size="sm"
+                  className="h-8 rounded-none shrink-0"
+                  disabled={!selectedId || linkMutation.isPending}
+                  onClick={() => linkMutation.mutate(selectedId)}
+                >
+                  <Link2 className="size-3.5" />
+                  {linkMutation.isPending ? "Vinculando…" : "Vincular"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 rounded-none shrink-0"
+                  onClick={() => { setLinkOpen(false); setSelectedId("") }}
+                >
+                  <X className="size-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 rounded-none gap-1.5 text-xs"
+                onClick={() => setLinkOpen(true)}
+              >
+                <Plus className="size-3.5" />
+                Vincular competência
+              </Button>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -192,6 +375,9 @@ export default function TasksPage() {
   const [errors, setErrors] = useState<TaskFormErrors>({})
   const [evaluatorSearch, setEvaluatorSearch] = useState("")
   const [evaluatedSearch, setEvaluatedSearch] = useState("")
+  const [search, setSearch] = useState("")
+  const [typeFilter, setTypeFilter] = useState<AssessmentType | "">("")
+  const [statusFilter, setStatusFilter] = useState<"PENDING" | "DONE" | "">("")
 
   function openDialog() { setDialogOpen(true) }
   function closeDialog() {
@@ -223,6 +409,17 @@ export default function TasksPage() {
     enabled: !!cycleId,
   })
   const tasks = tasksData?.content ?? []
+
+  const q = search.toLowerCase()
+  const filteredTasks = tasks.filter((t) => {
+    const matchSearch = !q ||
+      t.evaluatorName.fullName.toLowerCase().includes(q) ||
+      t.evaluatedName.fullName.toLowerCase().includes(q)
+    const matchType = !typeFilter || t.assessmentType === typeFilter
+    const matchStatus = !statusFilter || t.status === statusFilter
+    return matchSearch && matchType && matchStatus
+  })
+  const hasActiveFilter = !!search || !!typeFilter || !!statusFilter
 
   const filteredEvaluators = members.filter((m) =>
     m.fullName.toLowerCase().includes(evaluatorSearch.toLowerCase())
@@ -292,7 +489,7 @@ export default function TasksPage() {
   return (
     <div className="flex-1 overflow-auto">
       {/* Header */}
-      <div className="border-b px-6 py-5 flex items-center gap-4">
+      <div className="border-b px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3 sm:gap-4">
         <Button
           variant="ghost"
           size="sm"
@@ -342,15 +539,15 @@ export default function TasksPage() {
         </div>
 
         {canCreate && (
-          <Button size="sm" onClick={openDialog}>
+          <Button size="sm" onClick={openDialog} className="shrink-0">
             <Plus className="size-3.5" />
-            Criar tarefa
+            <span className="hidden sm:inline">Criar tarefa</span>
           </Button>
         )}
       </div>
 
       {/* Body */}
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {/* Tasks table */}
         <Card className="rounded-none shadow-none gap-0 py-0">
           <CardHeader className="px-5 py-4 border-b">
@@ -359,13 +556,69 @@ export default function TasksPage() {
               Tarefas
               {!tasksLoading && (
                 <span className="ml-auto text-xs font-normal text-muted-foreground tabular-nums">
-                  {tasks.length} {tasks.length === 1 ? "tarefa" : "tarefas"}
+                  {filteredTasks.length} {filteredTasks.length === 1 ? "tarefa" : "tarefas"}
+                  {hasActiveFilter && tasks.length !== filteredTasks.length && (
+                    <span className="text-muted-foreground/50"> de {tasks.length}</span>
+                  )}
                 </span>
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            <Table>
+
+          {/* Filter bar */}
+          <div className="flex items-center gap-2 border-b px-4 sm:px-5 py-2.5 flex-wrap">
+            <div className="relative flex-1 min-w-[180px] max-w-xs">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar por nome…"
+                className="h-7 rounded-none pl-8 text-xs"
+              />
+              {search && (
+                <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="size-3" />
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              {([["", "Tipo"], ["SELF", "Self"], ["PEER", "Peer"], ["MANAGER", "Manager"]] as const).map(([v, label]) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setTypeFilter(v as AssessmentType | "")}
+                  className={cn(
+                    "h-7 px-2.5 text-[11px] font-medium border transition-colors",
+                    typeFilter === v
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground hover:bg-accent",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1">
+              {([["", "Status"], ["PENDING", "Pendente"], ["DONE", "Concluído"]] as const).map(([v, label]) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setStatusFilter(v as "PENDING" | "DONE" | "")}
+                  className={cn(
+                    "h-7 px-2.5 text-[11px] font-medium border transition-colors",
+                    statusFilter === v
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground hover:bg-accent",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <CardContent className="p-0 overflow-x-auto">
+            <Table className="min-w-[600px]">
               <TableHeader>
                 <TableRow className="hover:bg-transparent border-b">
                   {["Avaliador", "Avaliado", "Tipo", "Status", "Prazo", "Criado por"].map(
@@ -385,10 +638,10 @@ export default function TasksPage() {
               <TableBody>
                 {tasksLoading ? (
                   Array.from({ length: 5 }).map((_, i) => <RowSkeleton key={i} />)
-                ) : tasks.length === 0 ? (
+                ) : filteredTasks.length === 0 ? (
                   <EmptyState />
                 ) : (
-                  tasks.map((task) => {
+                  filteredTasks.map((task) => {
                     const overdue =
                       task.status === "PENDING" && new Date(task.deadline) < now
                     return (
@@ -428,6 +681,12 @@ export default function TasksPage() {
             </Table>
           </CardContent>
         </Card>
+
+        {cycleId && slug && (
+          <div className="mt-6">
+            <CycleCompetencies slug={slug} cycleId={cycleId} canManage={canCreate} />
+          </div>
+        )}
       </div>
 
       {/* Create task dialog */}
@@ -450,9 +709,9 @@ export default function TasksPage() {
                   <SelectValue placeholder="Selecionar tipo…" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SELF">Autoavaliação</SelectItem>
-                  <SelectItem value="PEER">Par</SelectItem>
-                  <SelectItem value="MANAGER">Gestor</SelectItem>
+                  <SelectItem value="SELF">Self</SelectItem>
+                  <SelectItem value="PEER">Peer</SelectItem>
+                  <SelectItem value="MANAGER">Manager</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
@@ -530,11 +789,9 @@ export default function TasksPage() {
             </Field>
 
             <Field label="Prazo" error={errors.deadline}>
-              <Input
-                type="datetime-local"
+              <DateTimePicker
                 value={form.deadline}
-                onChange={(e) => setField("deadline", e.target.value)}
-                className="rounded-none  "
+                onChange={(v) => setField("deadline", v)}
               />
             </Field>
 
