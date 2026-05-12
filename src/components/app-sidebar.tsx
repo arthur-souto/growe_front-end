@@ -147,6 +147,7 @@ export function AppSidebar() {
                         asChild={false}
                         isActive={isActive}
                         tooltip={label}
+                        className={!isActive ? "hover:bg-white/5" : undefined}
                       >
                         <Icon />
                         <span>{label}</span>

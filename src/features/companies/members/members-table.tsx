@@ -219,7 +219,7 @@ export function MembersTable({
                   className="group cursor-pointer transition-colors"
                   onClick={() => onRowClick(member)}
                 >
-                  <TableCell className="pl-5 py-2.5">
+                  <TableCell className="pl-5 py-4">
                     <div className="flex items-center gap-3">
                       <Avatar className="size-7 shrink-0">
                         <AvatarImage src={member.profileImage || undefined} alt={member.fullName} />
@@ -237,16 +237,16 @@ export function MembersTable({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="py-2.5 text-xs text-muted-foreground">
+                  <TableCell className="py-4 text-xs text-muted-foreground">
                     {member.email}
                   </TableCell>
-                  <TableCell className="py-2.5">
+                  <TableCell className="py-4">
                     <RoleBadge role={member.role} />
                   </TableCell>
-                  <TableCell className="py-2.5 text-xs text-muted-foreground">
+                  <TableCell className="py-4 text-xs text-muted-foreground">
                     {fmtDate(member.createdAt)}
                   </TableCell>
-                  <TableCell className="py-2.5 pr-5" onClick={(e) => e.stopPropagation()}>
+                  <TableCell className="py-4 pr-5" onClick={(e) => e.stopPropagation()}>
                     {canEdit ? (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -274,7 +274,7 @@ export function MembersTable({
                     ) : isMe ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon-xs" disabled className="opacity-20">
+                          <Button variant="ghost" size="icon-xs" disabled className="opacity-0 group-hover:opacity-30 transition-opacity">
                             <MoreHorizontal className="size-3.5" />
                           </Button>
                         </TooltipTrigger>

@@ -53,7 +53,7 @@ export function EditRoleDialog({ open, onClose, member, slug, onUpdated, canAssi
     }
   }
 
-  const roles = canAssignOwner ? ALL_ROLES : ALL_ROLES.filter((r) => r !== "OWNER")
+  const roles = ALL_ROLES.filter((r) => r !== "OWNER")
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>

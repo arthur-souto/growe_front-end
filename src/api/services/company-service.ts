@@ -46,7 +46,7 @@ export class CompanyService {
   }
 
   addMember(slug: string, req: CreateCompanyMemberRequest) {
-    return instance.post<IdResponse>(`${BASE}/${slug}/add-member`, null, {
+    return instance.post<IdResponse>(`${BASE}/${slug}/add-member`, req, {
       params: req,
     })
   }

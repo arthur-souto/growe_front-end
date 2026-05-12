@@ -111,7 +111,7 @@ export function MemberSheet({
                   className="w-full"
                   onClick={() => setRemoveOpen(true)}
                 >
-                  Remover do workspace
+                  Remover da empresa
                 </Button>
               </div>
             </>

@@ -233,7 +233,7 @@ export default function CompanySettings() {
       <div className="mb-8 border-b pb-6">
         <h1 className="text-xl font-semibold">Configurações</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Gerencie as informações e preferências deste workspace.
+          Gerencie as informações e preferências desta empresa.
         </p>
       </div>
 
@@ -251,7 +251,7 @@ export default function CompanySettings() {
                 <CardHeader className="border-b">
                   <CardTitle>Informações gerais</CardTitle>
                   <CardDescription>
-                    Nome e porte visíveis para todos os membros do workspace.
+                    Nome e porte visíveis para todos os membros desta empresa.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -292,7 +292,7 @@ export default function CompanySettings() {
                 <CardHeader className="border-b">
                   <CardTitle>Aparência</CardTitle>
                   <CardDescription>
-                    Logo usada no workspace e nos cards da empresa.
+                    Logotipo usada na empresa e nos cards.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -378,7 +378,7 @@ export default function CompanySettings() {
                     />
                   </Field>
                 </div>
-                <Field label="Slug" hint="Usado na URL do workspace.">
+                <Field label="Slug" hint="Usado na URL da empresa.">
                   <Input value={`/${company?.slug ?? ""}`} readOnly disabled />
                 </Field>
               </CardContent>
@@ -390,8 +390,8 @@ export default function CompanySettings() {
                 <CardTitle>Membros</CardTitle>
                 <CardDescription>
                   {company?.members.length ?? 0}{" "}
-                  {company?.members.length === 1 ? "pessoa com" : "pessoas com"} acesso a este
-                  workspace.
+                  {company?.members.length === 1 ? "pessoa com" : "pessoas com"} acesso a esta
+                  empresa.
                 </CardDescription>
               </CardHeader>
               <CardContent>

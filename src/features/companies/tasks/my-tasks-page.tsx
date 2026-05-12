@@ -47,9 +47,9 @@ const cycleService = new CycleService()
 const taskService = new TaskService()
 
 const TYPE_LABEL: Record<AssessmentType, string> = {
-  SELF: "Self",
-  PEER: "Peer",
-  MANAGER: "Manager",
+  SELF: "Auto",
+  PEER: "Pares",
+  MANAGER: "Gestor",
 }
 
 const TYPE_STYLE: Record<AssessmentType, string> = {
@@ -741,7 +741,7 @@ export default function MyTasksPage() {
           )}
         </div>
         <div className="flex items-center gap-1">
-          {([["", "Tipo"], ["SELF", "Self"], ["PEER", "Peer"], ["MANAGER", "Manager"]] as const).map(([v, label]) => (
+          {([["", "Tipo"], ["SELF", "Auto"], ["PEER", "Pares"], ["MANAGER", "Gestor"]] as const).map(([v, label]) => (
             <button
               key={v}
               type="button"

@@ -65,19 +65,20 @@ const taskService = new TaskService()
 
 function fmtDeadline(iso?: string) {
   if (!iso) return "—"
-  return new Date(iso).toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
+  const d = new Date(iso)
+  const day = d.getDate()
+  const month = d.toLocaleDateString("pt-BR", { month: "short" })
+  const year = d.getFullYear()
+  const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0
+  if (!hasTime) return `${day} ${month} ${year}`
+  const time = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+  return `${day} ${month} ${year}, ${time}`
 }
 
 const ASSESSMENT_LABELS: Record<AssessmentType, string> = {
-  SELF: "Self",
-  PEER: "Peer",
-  MANAGER: "Manager",
+  SELF: "Auto",
+  PEER: "Pares",
+  MANAGER: "Gestor",
 }
 
 const ASSESSMENT_STYLES: Record<AssessmentType, string> = {
@@ -86,12 +87,11 @@ const ASSESSMENT_STYLES: Record<AssessmentType, string> = {
   MANAGER: "border-amber-500/40 bg-amber-500/10 text-amber-300",
 }
 
+const BADGE_BASE = "rounded-none text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 min-w-[90px] justify-center"
+
 function AssessmentBadge({ type }: { type: AssessmentType }) {
   return (
-    <Badge
-      variant="outline"
-      className={`rounded-none text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 ${ASSESSMENT_STYLES[type]}`}
-    >
+    <Badge variant="outline" className={`${BADGE_BASE} border ${ASSESSMENT_STYLES[type]}`}>
       {ASSESSMENT_LABELS[type]}
     </Badge>
   )
@@ -101,10 +101,10 @@ function StatusBadge({ status }: { status: "PENDING" | "DONE" }) {
   return (
     <Badge
       variant="outline"
-      className={`rounded-none text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 ${
+      className={`${BADGE_BASE} ${
         status === "PENDING"
-          ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
-          : "border-green-500/40 bg-green-500/10 text-green-400"
+          ? "border-orange-800 border bg-orange-950 text-orange-400"
+          : "border-green-500/40 border bg-green-500/10 text-green-400"
       }`}
     >
       {status === "PENDING" ? "Pendente" : "Concluído"}
@@ -284,7 +284,7 @@ function CycleCompetencies({ slug, cycleId, canManage }: CycleCompetenciesProps)
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
+                    className="size-7 shrink-0 text-muted-foreground hover:text-white hover:bg-white/10 rounded p-1.5 transition-colors cursor-pointer"
                     disabled={unlinkMutation.isPending}
                     onClick={() => unlinkMutation.mutate(c.id)}
                     title="Remover do ciclo"
@@ -489,7 +489,7 @@ export default function TasksPage() {
   return (
     <div className="flex-1 overflow-auto">
       {/* Header */}
-      <div className="border-b px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3 sm:gap-4">
+      <div className="border-b border-white/10 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 flex items-center gap-3 sm:gap-4">
         <Button
           variant="ghost"
           size="sm"
@@ -566,8 +566,8 @@ export default function TasksPage() {
           </CardHeader>
 
           {/* Filter bar */}
-          <div className="flex items-center gap-2 border-b px-4 sm:px-5 py-2.5 flex-wrap">
-            <div className="relative flex-1 min-w-[180px] max-w-xs">
+          <div className="flex items-center gap-4 border-b px-4 sm:px-5 py-2.5 flex-wrap">
+            <div className="relative flex-1 min-w-45 ">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
               <Input
                 value={search}
@@ -581,44 +581,50 @@ export default function TasksPage() {
                 </button>
               )}
             </div>
-            <div className="flex items-center gap-1">
-              {([["", "Tipo"], ["SELF", "Self"], ["PEER", "Peer"], ["MANAGER", "Manager"]] as const).map(([v, label]) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setTypeFilter(v as AssessmentType | "")}
-                  className={cn(
-                    "h-7 px-2.5 text-[11px] font-medium border transition-colors",
-                    typeFilter === v
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:text-foreground hover:bg-accent",
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Tipo</span>
+              <div className="flex items-center gap-1">
+                {(["SELF", "PEER", "MANAGER"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setTypeFilter((prev) => (prev === v ? "" : v))}
+                    className={cn(
+                      "h-6 px-2.5 text-[11px] font-medium border   transition-colors",
+                      typeFilter === v
+                        ? "bg-white/10 text-white border-white/30"
+                        : "border-white/10 text-white/50 hover:text-white hover:border-white/30",
+                    )}
+                  >
+                    {ASSESSMENT_LABELS[v]}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              {([["", "Status"], ["PENDING", "Pendente"], ["DONE", "Concluído"]] as const).map(([v, label]) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setStatusFilter(v as "PENDING" | "DONE" | "")}
-                  className={cn(
-                    "h-7 px-2.5 text-[11px] font-medium border transition-colors",
-                    statusFilter === v
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:text-foreground hover:bg-accent",
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Status</span>
+              <div className="flex items-center gap-1">
+                {(["PENDING", "DONE"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setStatusFilter((prev) => (prev === v ? "" : v))}
+                    className={cn(
+                      "h-6 px-2.5 text-[11px] font-medium border  transition-colors",
+                      statusFilter === v
+                        ? "bg-white/10 text-white border-white/30"
+                        : "border-white/10 text-white/50 hover:text-white hover:border-white/30",
+                    )}
+                  >
+                    {v === "PENDING" ? "Pendente" : "Concluído"}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
           <CardContent className="p-0 overflow-x-auto">
-            <Table className="min-w-[600px]">
+            <Table className="min-w-150">
               <TableHeader>
                 <TableRow className="hover:bg-transparent border-b">
                   {["Avaliador", "Avaliado", "Tipo", "Status", "Prazo", "Criado por"].map(
@@ -683,7 +689,7 @@ export default function TasksPage() {
         </Card>
 
         {cycleId && slug && (
-          <div className="mt-6">
+          <div className="mt-8 pt-8 border-t border-white/10">
             <CycleCompetencies slug={slug} cycleId={cycleId} canManage={canCreate} />
           </div>
         )}
@@ -709,9 +715,9 @@ export default function TasksPage() {
                   <SelectValue placeholder="Selecionar tipo…" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SELF">Self</SelectItem>
-                  <SelectItem value="PEER">Peer</SelectItem>
-                  <SelectItem value="MANAGER">Manager</SelectItem>
+                  <SelectItem value="SELF">Auto</SelectItem>
+                  <SelectItem value="PEER">Pares</SelectItem>
+                  <SelectItem value="MANAGER">Gestor</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
@@ -720,7 +726,6 @@ export default function TasksPage() {
               <Select
                 value={form.evaluatorId}
                 onValueChange={(v) => setField("evaluatorId", v)}
-                disabled={isSelf}
                 onOpenChange={(open) => !open && setEvaluatorSearch("")}
               >
                 <SelectTrigger className="w-full rounded-none">
@@ -756,7 +761,6 @@ export default function TasksPage() {
               <Select
                 value={form.evaluatedId}
                 onValueChange={(v) => setField("evaluatedId", v)}
-                disabled={isSelf}
                 onOpenChange={(open) => !open && setEvaluatedSearch("")}
               >
                 <SelectTrigger className="w-full rounded-none">
@@ -787,6 +791,14 @@ export default function TasksPage() {
                 </SelectContent>
               </Select>
             </Field>
+
+
+            {isSelf && (
+              <div className="flex flex-col gap-1 border-2 p-2">
+                <h1 className="text-[14px] font-bold">Auto Avaliação Escolhida</h1>
+                <p>O <span>avaliador</span> e <span>avaliado</span> devem ser o mesmo.</p>
+              </div>
+            )}
 
             <Field label="Prazo" error={errors.deadline}>
               <DateTimePicker

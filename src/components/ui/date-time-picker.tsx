@@ -43,8 +43,8 @@ export function DateTimePicker({
 
   React.useEffect(() => {
     if (open) {
-      setLocalHours(selected ? String(selected.getHours()).padStart(2, "0") : "00")
-      setLocalMinutes(selected ? String(selected.getMinutes()).padStart(2, "0") : "00")
+      setLocalHours(selected ? String(selected.getHours()).padStart(2, "0") :  new Date().getHours().toString())
+      setLocalMinutes(selected ? String(selected.getMinutes()).padStart(2, "0") : new Date().getMinutes().toString())
     }
   }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 

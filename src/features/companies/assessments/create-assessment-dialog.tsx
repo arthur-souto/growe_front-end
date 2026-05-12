@@ -85,9 +85,9 @@ export function ScoreRating({
 }
 
 const TYPE_LABEL: Record<AssessmentType, string> = {
-  SELF: "Self",
-  PEER: "Peer",
-  MANAGER: "Manager",
+  SELF: "Auto",
+  PEER: "Pares",
+  MANAGER: "Gestor",
 }
 
 const TYPE_STYLE: Record<AssessmentType, string> = {

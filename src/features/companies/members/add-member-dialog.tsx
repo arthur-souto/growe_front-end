@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { toast } from "sonner"
-import { UserPlus } from "lucide-react"
+import { ClipboardSignature, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -102,7 +102,7 @@ export function AddMemberDialog({ open, onClose, onCreated, slug, canAssignOwner
     setErrors((p) => { const n = { ...p }; delete n[key]; return n })
   }
 
-  const roles = canAssignOwner ? ALL_ROLES : ALL_ROLES.filter((r) => r !== "OWNER")
+  const roles = ALL_ROLES.filter((r) => r !== "OWNER")
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>

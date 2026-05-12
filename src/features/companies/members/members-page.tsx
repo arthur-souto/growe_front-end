@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect } from "react"
 import { useParams, Navigate } from "react-router"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { Plus, Upload, Users } from "lucide-react"
+import { BarChart3, Briefcase, Crown, Plus, ShieldCheck, Upload, User, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CompanyService } from "@/api/services/company-service"
 import { useUser } from "@/hooks/useUser"
+import type { LucideIcon } from "lucide-react"
 import type { CompanyMemberRole, ResumeMemberResponse } from "@/api/model"
 import {
   ALL_ROLES,
@@ -15,6 +16,14 @@ import {
   type SortDir,
   type SortKey,
 } from "./members.config"
+
+const ROLE_ICONS: Record<CompanyMemberRole, LucideIcon> = {
+  ADMIN: ShieldCheck,
+  OWNER: Crown,
+  RH: Briefcase,
+  MANAGER: BarChart3,
+  EMPLOYEE: User,
+}
 import { AddMemberDialog } from "./add-member-dialog"
 import { EditRoleDialog } from "./edit-role-dialog"
 import { ImportMembersDialog } from "./import-members-dialog"
@@ -154,16 +163,17 @@ export default function MembersPage() {
           {ALL_ROLES.map((role) => {
             const active = roleFilter === role
             const cfg = ROLE_CONFIG[role]
+            const RoleIcon = ROLE_ICONS[role]
             return (
               <button
                 key={role}
                 onClick={() => setRoleFilter((prev) => (prev === role ? "ALL" : role))}
-                className={`flex flex-col gap-3 px-5 py-4 text-left transition-colors bg-card ${
+                className={`flex flex-col gap-2 px-4 py-3 text-left transition-colors bg-card ${
                   active ? cfg.activeBorder : "hover:bg-muted/50"
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className={`size-1.5 shrink-0 ${cfg.dot}`} />
+                  <RoleIcon className={`size-3.5 shrink-0 ${cfg.iconColor}`} />
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                     {cfg.label}
                   </span>
@@ -174,9 +184,9 @@ export default function MembersPage() {
                   )}
                 </div>
                 {loading ? (
-                  <Skeleton className="h-8 w-12 rounded-none" />
+                  <Skeleton className="h-6 w-10 rounded-none" />
                 ) : (
-                  <span className="text-4xl font-bold tabular-nums leading-none">
+                  <span className="text-2xl font-bold tabular-nums leading-none">
                     {stats[role]}
                   </span>
                 )}

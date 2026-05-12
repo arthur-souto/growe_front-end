@@ -34,7 +34,7 @@ export function RemoveMemberDialog({ open, onClose, member, slug, onRemoved }: P
     setRemoving(true)
     try {
       await companyService.removeMember(slug, member.id)
-      toast.success(`${member.fullName} removido(a) do workspace.`)
+      toast.success(`${member.fullName} removido(a) da empresa.`)
       onRemoved()
       onClose()
     } catch (err) {
@@ -51,8 +51,8 @@ export function RemoveMemberDialog({ open, onClose, member, slug, onRemoved }: P
           <AlertDialogTitle>Remover membro</AlertDialogTitle>
           <AlertDialogDescription>
             Tem certeza que deseja remover{" "}
-            <span className="font-semibold text-foreground">{member.fullName}</span> deste
-            workspace? Essa ação não pode ser desfeita.
+            <span className="font-semibold text-foreground">{member.fullName}</span> desta
+            empresa? Essa ação não pode ser desfeita.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
