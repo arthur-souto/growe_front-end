@@ -85,6 +85,24 @@ export const routes = createBrowserRouter([
                   () => import("./features/companies/tasks/my-tasks-page.tsx")
                 ),
               },
+              {
+                path: "meu-dashboard",
+                Component: lazy(
+                  () => import("./features/companies/dashboard/personal-dashboard-page.tsx")
+                ),
+              },
+              {
+                path: "dashboard-equipe",
+                Component: lazy(
+                  () => import("./features/companies/dashboard/team-dashboard-page.tsx")
+                ),
+              },
+              {
+                path: "dashboard-equipe/:memberId",
+                Component: lazy(
+                  () => import("./features/companies/dashboard/personal-dashboard-page.tsx")
+                ),
+              },
             ],
           },
         ],

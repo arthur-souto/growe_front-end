@@ -287,3 +287,33 @@ export interface PagedModelCompetencyResponse {
 export interface ImproveCommentResponse {
   response: string
 }
+
+export interface CycleAverage {
+  cycleName: string
+  cycleStartDate: string
+  avgScore: number
+}
+
+export interface DashboardComment {
+  evaluatorName: string
+  assessmentType: AssessmentType
+  cycleName: string
+  competencyName: string | null
+  comment: string
+  createdAt: string
+}
+
+export interface PersonalDashboardResponse {
+  memberId: string
+  memberName: string
+  overallAvgScore: number | null
+  cycleAverages: CycleAverage[]
+  recentComments: DashboardComment[]
+}
+
+export interface TeamMemberSummaryResponse {
+  memberId: string
+  memberName: string
+  role: CompanyMemberRole
+  overallAvgScore: number | null
+}

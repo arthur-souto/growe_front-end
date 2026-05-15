@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { DateTimePicker } from "@/components/ui/date-time-picker"
 import {
   Dialog,
   DialogContent,
@@ -222,19 +221,39 @@ export function CreateCycleDialog({ open, slug, onClose, onCreated }: Props) {
           </Field>
 
           <Field id="cc-start" label="Data de Início" error={errors.startDate}>
-            <DateTimePicker
-              id="cc-start"
-              value={form.startDate}
-              onChange={(v) => setField("startDate", v)}
-            />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="date"
+                id="cc-start"
+                value={form.startDate.split("T")[0] ?? ""}
+                onChange={(e) => setField("startDate", e.target.value + "T" + (form.startDate.split("T")[1] ?? "00:00"))}
+                className="w-full sm:flex-1 h-11 sm:h-9 border border-input bg-background px-3 py-1 text-base sm:text-sm shadow-sm rounded-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+              <input
+                type="time"
+                value={form.startDate.split("T")[1] ?? ""}
+                onChange={(e) => setField("startDate", (form.startDate.split("T")[0] ?? "") + "T" + e.target.value)}
+                className="w-full sm:w-28 h-11 sm:h-9 border border-input bg-background px-3 py-1 text-base sm:text-sm shadow-sm rounded-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
           </Field>
 
           <Field id="cc-end" label="Data de Fim" error={errors.endDate}>
-            <DateTimePicker
-              id="cc-end"
-              value={form.endDate}
-              onChange={(v) => setField("endDate", v)}
-            />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="date"
+                id="cc-end"
+                value={form.endDate.split("T")[0] ?? ""}
+                onChange={(e) => setField("endDate", e.target.value + "T" + (form.endDate.split("T")[1] ?? "00:00"))}
+                className="w-full sm:flex-1 h-11 sm:h-9 border border-input bg-background px-3 py-1 text-base sm:text-sm shadow-sm rounded-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+              <input
+                type="time"
+                value={form.endDate.split("T")[1] ?? ""}
+                onChange={(e) => setField("endDate", (form.endDate.split("T")[0] ?? "") + "T" + e.target.value)}
+                className="w-full sm:w-28 h-11 sm:h-9 border border-input bg-background px-3 py-1 text-base sm:text-sm shadow-sm rounded-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
           </Field>
 
           <DialogFooter className="pt-2">

@@ -1,6 +1,8 @@
 import { NavLink, useParams } from "react-router"
 import { useQuery } from "@tanstack/react-query"
 import {
+  Activity,
+  BarChart2,
   BookOpen,
   Building2,
   CalendarRange,
@@ -45,13 +47,15 @@ import { getApiErrorMessage } from "@/api/api-error"
 const companyService = new CompanyService()
 
 const ALL_NAV_ITEMS = [
-  { label: "Dashboard",      icon: LayoutDashboard, path: "",                  roles: ["OWNER", "RH", "MANAGER", "ADMIN", "EMPLOYEE"] },
-  { label: "Membros",        icon: Users,           path: "/membros",          roles: ["OWNER", "RH", "MANAGER", "ADMIN"] },
-  { label: "Ciclos",         icon: CalendarRange,   path: "/ciclos",           roles: null },
-  { label: "Competências",   icon: BookOpen,        path: "/competencias",     roles: ["OWNER", "RH", "MANAGER", "ADMIN"] },
-  { label: "Avaliações",     icon: ClipboardCheck,  path: "/avaliacoes",       roles: ["OWNER", "RH", "MANAGER", "ADMIN"] },
-  { label: "Minhas Tarefas", icon: ListTodo,        path: "/minhas-tarefas",   roles: ["OWNER", "RH", "MANAGER", "ADMIN", "EMPLOYEE"] },
-  { label: "Configurações",  icon: Settings,        path: "/configuracoes",    roles: ["OWNER", "RH", "MANAGER", "ADMIN"] },
+  { label: "Dashboard",          icon: LayoutDashboard, path: "",                    roles: ["OWNER", "RH", "MANAGER", "ADMIN", "EMPLOYEE"] },
+  { label: "Meu Desempenho",     icon: Activity,        path: "/meu-dashboard",      roles: ["OWNER", "RH", "MANAGER", "ADMIN", "EMPLOYEE"] },
+  { label: "Dashboard da Equipe",icon: BarChart2,        path: "/dashboard-equipe",   roles: ["OWNER", "MANAGER", "ADMIN"] },
+  { label: "Membros",            icon: Users,           path: "/membros",            roles: ["OWNER", "RH", "MANAGER", "ADMIN"] },
+  { label: "Ciclos",             icon: CalendarRange,   path: "/ciclos",             roles: null },
+  { label: "Competências",       icon: BookOpen,        path: "/competencias",       roles: ["OWNER", "RH", "MANAGER", "ADMIN"] },
+  { label: "Avaliações",         icon: ClipboardCheck,  path: "/avaliacoes",         roles: ["OWNER", "RH", "MANAGER", "ADMIN"] },
+  { label: "Minhas Tarefas",     icon: ListTodo,        path: "/minhas-tarefas",     roles: ["OWNER", "RH", "MANAGER", "ADMIN", "EMPLOYEE"] },
+  { label: "Configurações",      icon: Settings,        path: "/configuracoes",      roles: ["OWNER", "RH", "MANAGER", "ADMIN"] },
 ] as const
 
 function getInitials(name: string) {
@@ -127,8 +131,6 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-
-      <SidebarSeparator />
 
       {/* Navigation */}
       <SidebarContent>
